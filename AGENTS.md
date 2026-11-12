@@ -52,11 +52,15 @@ and Linux, copy it on Windows:
 | From this repository | Name in the skills folder |
 |---|---|
 | `libraries/banui/skills/banui` | `banui` |
-| `plugins/agent-desktop/skills/agent-desktop` | `agent-desktop` |
-| `plugins/agent-desktop/skills/agent-desktop-<macos, windows or linux>` (this system only) | the same name |
+| `skills/agent-desktop` of the original repository (see below) | `agent-desktop` |
+| `skills/agent-desktop-<macos, windows or linux>` of the original repository (this system only) | the same name |
 | `plugins/ember/skills/handoff` | `handoff` |
 
-A link points into this clone, so the clone has to stay where it is; if it moves, link again. The
+`agent-desktop` is not kept in this repository. Clone the original next to the global `opencode.json`,
+`git clone https://github.com/vercel-labs/agent-desktop ~/.config/opencode/vendor/agent-desktop`, check out its
+latest release tag, and link or copy the skills from there.
+
+A link points into a clone, so the clone has to stay where it is; if it moves, link again. The
 `agent-desktop` skills need their CLI here too: `npm install -g agent-desktop@latest`, then `agent-desktop status`.
 
 The rm guard. OpenCode has no hook like Claude Code's, so the guard is a list of deny rules in the global

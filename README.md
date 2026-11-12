@@ -17,13 +17,13 @@ seymurglv-kit
 Open a folder to see what is inside.
 
 <details>
-<summary><b>plugins/</b> &nbsp;·&nbsp; 3 plugins for coding agents</summary>
+<summary><b>plugins/</b> &nbsp;·&nbsp; 2 plugins of my own, 1 from its original repository</summary>
 
 <br>
 
 | Plugin | Claude Code | OpenCode | What it is |
 |---|---|---|---|
-| [`agent-desktop`](plugins/agent-desktop) | yes | skills | Desktop control through the OS accessibility tree: snapshot an app, act on a ref, re-read to verify. Guides for macOS, Windows and Linux |
+| [`agent-desktop`](https://github.com/vercel-labs/agent-desktop) | yes | skills | Not kept here: installed from Vercel Labs' own repository. Desktop control through the OS accessibility tree: snapshot an app, act on a ref, re-read to verify. Guides for macOS, Windows and Linux |
 | [`ember`](plugins/ember) | yes | handoff skill only | How warm this chat's prompt cache is, keep-warm on a press, a board of local chats, and a handoff to a fresh chat |
 | [`waypoints`](plugins/waypoints) | yes | no | Up to three likely next prompts as quiet rows above the prompt box after each turn |
 

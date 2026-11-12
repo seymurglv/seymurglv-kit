@@ -1,9 +1,0 @@
-{
-  "name": "agent-desktop",
-  "description": "Computer use through the OS accessibility tree (Vercel Labs' agent-desktop CLI): snapshot an app, act on a ref, re-read to verify. The core skill plus the Windows, macOS and Linux guides, synced from upstream releases.",
-  "author": {
-    "name": "seymurglv"
-  },
-  "license": "Apache-2.0",
-  "keywords": ["computer-use", "desktop", "accessibility", "windows", "macos", "linux", "automation"]
-}

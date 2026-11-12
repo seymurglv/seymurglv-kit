@@ -9,8 +9,18 @@
   "plugins": [
     {
       "name": "agent-desktop",
-      "source": "./plugins/agent-desktop",
-      "description": "Computer use through the OS accessibility tree (Vercel Labs' agent-desktop CLI): snapshot an app, act on a ref, re-read to verify. The core skill plus the Windows, macOS and Linux guides, synced from upstream releases."
+      "source": {
+        "source": "github",
+        "repo": "vercel-labs/agent-desktop"
+      },
+      "description": "Computer use through the OS accessibility tree, taken straight from Vercel Labs' agent-desktop repository: the core skill plus the macOS, Windows and Linux guides.",
+      "strict": false,
+      "skills": [
+        "./skills/agent-desktop",
+        "./skills/agent-desktop-macos",
+        "./skills/agent-desktop-windows",
+        "./skills/agent-desktop-linux"
+      ]
     },
     {
       "name": "banui",
