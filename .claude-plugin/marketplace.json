@@ -10,8 +10,8 @@
     {
       "name": "agent-desktop",
       "source": {
-        "source": "github",
-        "repo": "vercel-labs/agent-desktop"
+        "source": "url",
+        "url": "https://github.com/vercel-labs/agent-desktop.git"
       },
       "description": "Computer use through the OS accessibility tree, taken straight from Vercel Labs' agent-desktop repository: the core skill plus the macOS, Windows and Linux guides.",
       "strict": false,
