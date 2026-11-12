@@ -52,7 +52,7 @@ It is a function-hooks plugin (`hooks/register.tsx`):
 ## Install
 
 ```
-/plugin install waypoints --marketplace seymurglv/seymurglv
+/plugin install waypoints --marketplace seymurglv/seymurglv-kit
 ```
 
 ## Options

@@ -21,7 +21,7 @@ for your agent. If both agents are installed and the person asked for both, do b
 Plugins:
 
 ```sh
-claude plugin marketplace add seymurglv/seymurglv
+claude plugin marketplace add seymurglv/seymurglv-kit
 claude plugin install agent-desktop@seymurglv
 claude plugin install banui@seymurglv
 claude plugin install ember@seymurglv

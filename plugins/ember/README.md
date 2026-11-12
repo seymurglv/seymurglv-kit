@@ -59,17 +59,17 @@ reading it stops the keeping, with a `!` on the row.
 At the prompt of a terminal session:
 
 ```
-/plugin install ember --marketplace seymurglv/seymurglv
+/plugin install ember --marketplace seymurglv/seymurglv-kit
 ```
 
 From a shell:
 
 ```
-claude plugin install ember --marketplace seymurglv/seymurglv
+claude plugin install ember --marketplace seymurglv/seymurglv-kit
 ```
 
 In Claude Desktop, where `/plugin` does not run: + next to the prompt box,
-Plugins, Add marketplace `seymurglv/seymurglv`, then Add plugin.
+Plugins, Add marketplace `seymurglv/seymurglv-kit`, then Add plugin.
 
 ## Develop
 

@@ -17,7 +17,7 @@ The skills are copied unchanged from upstream at the release in [`upstream.json`
 ## Install
 
 ```
-/plugin install agent-desktop --marketplace seymurglv/seymurglv
+/plugin install agent-desktop --marketplace seymurglv/seymurglv-kit
 ```
 
 The CLI is not shipped. Install it once per machine:
