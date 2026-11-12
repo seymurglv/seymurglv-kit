@@ -21,6 +21,9 @@ test('читает название и сведения со страницы', 
     .toEqual({ name: 'Флажок', group: 'control', signs: 'капсула, линия', note: 'Две линии', added: '2026-11-12' })
   expect(readMeta('<p>без сведений</p>')).toEqual({ name: null, group: 'other', signs: '', note: '', added: '' })
   expect(readMeta('<meta name="banui:group" content="widget">').group).toBe('other')
+  // values are text, not page source: an entity is read once, an unknown one stays as written
+  expect(readMeta('<title>Флажок &amp; линия</title><meta name="banui:note" content="Две &quot;линии&quot; &#8212; да&nbsp;&#x2713; &lt;b&gt; &#39;и&#39; &amp;lt; &mdash;">'))
+    .toMatchObject({ name: 'Флажок & линия', note: 'Две "линии" — да ✓ <b> \'и\' &lt; &mdash;' })
 })
 test('уровень задаёт папка, адрес пробы с приставкой', () => {
   const root = tree(), probes = join(root, 'probes')
@@ -46,12 +49,20 @@ test('мусор пропускается', () => {
   put(join(probes, '.board'), '<title>Доска</title>')
   put(join(probes, 'noindex'), 'не страница', 'readme.txt')
   put(join(probes, 'Bad Name'), '<title>Имя</title>')
+  put(example(root, 'probe-x'), '<title>Занятое имя</title>') // would share its id with probes/x
   expect(collect({ root, probes }).filter(i => i.level === 'probe')).toEqual([])
+  expect(collect({ root, probes }).map(i => i.id)).toEqual([])
 })
 test('порядок: группы по списку, внутри новые выше', () => {
   const root = tree()
-  put(example(root, 'settings'), `<title>Экран</title>${meta('group', 'screen')}${meta('added', '2026-11-01')}`)
+  // Each rule is the only one that can put its item where it belongs:
+  // «Афиша» is first by name and last by group, «Ящик» is last by name and first by date,
+  // «Точка» and «Якорь» share group and date while their folders (dot, anchor) sort the other way.
+  put(example(root, 'poster'), `<title>Афиша</title>${meta('group', 'screen')}${meta('added', '2026-11-01')}`)
   put(example(root, 'dot'), `<title>Точка</title>${meta('group', 'base')}${meta('added', '2026-11-01')}`)
-  put(example(root, 'line'), `<title>Линия</title>${meta('group', 'base')}${meta('added', '2026-11-12')}`)
-  expect(collect({ root }).map(i => [i.group, i.added])).toEqual([['base', '2026-11-12'], ['base', '2026-11-01'], ['screen', '2026-11-01']])
+  put(example(root, 'anchor'), `<title>Якорь</title>${meta('group', 'base')}${meta('added', '2026-11-01')}`)
+  put(example(root, 'box'), `<title>Ящик</title>${meta('group', 'base')}${meta('added', '2026-11-12')}`)
+  expect(collect({ root }).map(i => [i.group, i.added, i.name])).toEqual([
+    ['base', '2026-11-12', 'Ящик'], ['base', '2026-11-01', 'Точка'], ['base', '2026-11-01', 'Якорь'], ['screen', '2026-11-01', 'Афиша'],
+  ])
 })
