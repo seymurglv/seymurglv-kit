@@ -2,6 +2,7 @@
   "compilerOptions": {
     "strict": true,
     "noEmit": true,
+    "allowJs": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
     "target": "ES2022",
