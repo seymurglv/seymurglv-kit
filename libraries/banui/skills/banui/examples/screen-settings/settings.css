@@ -1,26 +1,31 @@
-/* Settings screen: two live windows side by side, light and dark. Page layout only. */
-body { margin: 0; }
-.page { min-height: 100vh; padding: 32px 24px; }
+/* Settings screen: one window and a line of text under it. Layout only; every sign comes from the kit. */
 
-/* Columns from 460 px; one column when two do not fit. */
-.wins {
-  display: grid; gap: 32px 24px; justify-content: center; align-items: start;
-  grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 540px));
+/* ---------- page: the same in every example ---------- */
+/* The root fills the window and keeps its content in the middle, 24 px clear of every edge. */
+body { margin: 0; }
+main.ban {
+  box-sizing: border-box; min-height: 100vh; min-height: 100dvh; padding: 24px;
+  display: grid; place-items: center;
 }
-/* Reserved height: the caption (16 px line + 10 px margin) plus the window of the tallest section,
-   Общие (327), so the text below never moves on a section change. */
-.col { min-width: 0; min-height: calc(26px + 327px); }
-.cap { margin: 0 0 10px; font-size: 13px; line-height: 16px; color: var(--ban-muted); }
-#after { margin: 32px 0 0; text-align: center; color: var(--ban-muted); }
+
+/* ---------- this page ---------- */
+/* The first row is as tall as the window ever gets: the tallest section, Общие (327), with the note
+   under a wrong address (+21). The window grows inside it, so nothing on the page moves. */
+.col {
+  width: min(100%, 540px);
+  display: grid; grid-template: minmax(348px, auto) auto / minmax(0, 1fr); align-items: start;
+}
+#after { margin: 32px 0 0; line-height: 16px; text-align: center; color: var(--ban-muted); }
 
 /* ---------- window ---------- */
 .win {
-  position: relative; width: 100%; max-width: 540px;
+  position: relative;
   border: 1px solid var(--ban-line); border-radius: 14px; background: var(--ban-bg);
   box-shadow: 0 14px 32px -20px rgba(0, 0, 0, .35);
 }
-/* The title is as wide as its text, so the drop's message can be measured against it. */
-.win-title { width: max-content; height: 48px; padding: 0 16px; font-size: 13px; font-weight: 600; line-height: 48px; }
+/* The title's box ends where its text ends, so the drop's message can be measured against it:
+   a message leaves 96 px of the window free on the left, and the title has to fit in them. */
+.win-title { width: max-content; height: 48px; padding-left: 16px; font-size: 13px; font-weight: 600; line-height: 48px; }
 .win-nav { height: 42px; padding: 0 16px 14px; }
 .win-panels { border-top: 1px solid var(--ban-line); }
 .win-panels > [role="tabpanel"] { padding: 2px 16px 8px; }
@@ -42,7 +47,3 @@ body { margin: 0; }
 .row-end { flex: none; display: flex; align-items: flex-start; gap: 10px; }
 .row-end > .ban-button { margin: 2px 0; }
 .row-value { flex: none; line-height: 28px; color: var(--ban-muted); white-space: nowrap; }
-
-@media (max-width: 600px) {
-  .page { padding: 24px 16px; }
-}

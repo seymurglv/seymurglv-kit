@@ -2,9 +2,14 @@ import { test, expect, type Locator } from '@playwright/test'
 
 const H: Record<string, number> = { 'Общие': 327, 'Звук': 237, 'О программе': 192 }
 
-for (const id of ['#win-light', '#win-dark']) for (const width of [1280, 390]) test.describe(`${id} ${width}`, () => {
+const PAGE = '/skills/banui/examples/screen-settings/index.html'
+
+for (const scheme of ['light', 'dark'] as const) for (const width of [1280, 390]) test.describe(`${scheme} ${width}`, () => {
   let win: Locator
-  test.beforeEach(async ({ page }) => { await page.setViewportSize({ width, height: 900 }); await page.goto('/demo/settings.html'); win = page.locator(id) })
+  test.beforeEach(async ({ page }) => {
+    await page.emulateMedia({ colorScheme: scheme }); await page.setViewportSize({ width, height: 900 })
+    await page.goto(PAGE); win = page.locator('.win')
+  })
 
   test('высота окна по разделам, переход в одну сторону, под окнами ничего не едет', async ({ page }) => {
     const afterY = (await page.locator('#after').boundingBox())!.y; let prev = 327

@@ -125,7 +125,7 @@
 ## Команды
 
 ```sh
-npm run dev        # примеры: /demo/specimen.html и /demo/settings.html на http://127.0.0.1:5179
+npm run dev        # http://127.0.0.1:5179: образцы знаков /demo/specimen.html, пример /skills/banui/examples/screen-settings/index.html
 npm run test:unit  # модульные проверки
 npm run test:e2e   # проверки в браузерах
 npm run build      # dist/ и её точная копия в skills/banui/kit/: модули, объявления типов, banui.css и шрифты
@@ -145,11 +145,12 @@ src/
   motion.ts          смена подписи, высота, ширина текста
   index.ts           вход и mount()
   banui.css          собирает всё вместе
-demo/                образцы знаков и окно настроек
+demo/                образцы знаков
 tests/               модульные и браузерные проверки
 scripts/             сборка стилей, копия сборки в kit/ и снимки
 skills/banui/        правила языка для агента
   kit/               собранная библиотека, копия dist/; её пишет build
+  examples/          готовые примеры; папка примера вместе с kit/ копируется как есть
 assets/              снимки для этого файла
 ```
 
