@@ -1,0 +1,48 @@
+/* Settings screen: two live windows side by side, light and dark. Page layout only. */
+body { margin: 0; }
+.page { min-height: 100vh; padding: 32px 24px; }
+
+/* Columns from 460 px; one column when two do not fit. */
+.wins {
+  display: grid; gap: 32px 24px; justify-content: center; align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 540px));
+}
+/* Reserved height: the caption (16 px line + 10 px margin) plus the window of the tallest section,
+   Общие (327), so the text below never moves on a section change. */
+.col { min-width: 0; min-height: calc(26px + 327px); }
+.cap { margin: 0 0 10px; font-size: 13px; line-height: 16px; color: var(--ban-muted); }
+#after { margin: 32px 0 0; text-align: center; color: var(--ban-muted); }
+
+/* ---------- window ---------- */
+.win {
+  position: relative; width: 100%; max-width: 540px;
+  border: 1px solid var(--ban-line); border-radius: 14px; background: var(--ban-bg);
+  box-shadow: 0 14px 32px -20px rgba(0, 0, 0, .35);
+}
+/* The title is as wide as its text, so the drop's message can be measured against it. */
+.win-title { width: max-content; height: 48px; padding: 0 16px; font-size: 13px; font-weight: 600; line-height: 48px; }
+.win-nav { height: 42px; padding: 0 16px 14px; }
+.win-panels { border-top: 1px solid var(--ban-line); }
+.win-panels > [role="tabpanel"] { padding: 2px 16px 8px; }
+
+/* ---------- rows ---------- */
+/* 44 px of content; every row after the first carries its 1 px line inside its own block. */
+.row {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  padding: 8px 0;
+  transition: padding-bottom .3s var(--ban-e-spring);
+}
+.row + .row { border-top: 1px solid var(--ban-line); }
+/* A field in error makes room under its box for the note: the row grows by 21 px. */
+.row:has(> .ban-field-box[data-state="error"]) { padding-bottom: 29px; }
+
+.row-label { flex: 1 1 auto; min-width: 0; line-height: 28px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row > :is(.ban-field, .ban-field-box, .ban-select, .ban-select-box) { flex: none; width: 220px; }
+.row > .ban-toggle { flex: none; margin: 4px 0; }
+.row-end { flex: none; display: flex; align-items: flex-start; gap: 10px; }
+.row-end > .ban-button { margin: 2px 0; }
+.row-value { flex: none; line-height: 28px; color: var(--ban-muted); white-space: nowrap; }
+
+@media (max-width: 600px) {
+  .page { padding: 24px 16px; }
+}

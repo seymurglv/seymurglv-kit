@@ -1,0 +1,34 @@
+{
+  "name": "seymurglv",
+  "owner": {
+    "name": "seymurglv"
+  },
+  "metadata": {
+    "description": "seymurglv's own tools: agent plugins, the banui library and machine setup."
+  },
+  "plugins": [
+    {
+      "name": "agent-desktop",
+      "source": "./plugins/agent-desktop",
+      "description": "Computer use through the OS accessibility tree (Vercel Labs' agent-desktop CLI): snapshot an app, act on a ref, re-read to verify. The core skill plus the Windows, macOS and Linux guides, synced from upstream releases."
+    },
+    {
+      "name": "banui",
+      "source": "./libraries/banui",
+      "description": "The banui design language: every control built from five signs, with a lamp color map, starter styles and control recipes.",
+      "skills": [
+        "./skills/banui"
+      ]
+    },
+    {
+      "name": "ember",
+      "source": "./plugins/ember",
+      "description": "How warm this chat's prompt cache is: a quiet row with minutes until cold, keep-warm on a press, /board, /handoff."
+    },
+    {
+      "name": "waypoints",
+      "source": "./plugins/waypoints",
+      "description": "Up to three likely next prompts as quiet rows above the prompt box after each turn."
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>banui: образцы</title>
+  <link rel="stylesheet" href="/src/banui.css">
+  <style>
+    body { margin: 0; }
+    main.ban { min-height: 100vh; padding: 24px; }
+    main.ban > section { margin: 0 0 32px; }
+    main.ban h2 { margin: 0 0 12px; font-size: 13px; font-weight: 600; }
+    .row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 12px; }
+    .cell { position: relative; width: 28px; height: 28px; }
+    .pill { display: inline-block; width: 64px; height: 28px; }
+    .pill > .ban-lamp { left: 50%; top: 50%; margin: -1.5px 0 0 -1.5px; }
+    .btn { height: 28px; padding: 0 14px; }
+    .penbox { width: 120px; height: 24px; padding: 8px 10px; box-sizing: border-box; background: var(--ban-bg); }
+    .inner { width: 100%; height: 100%; padding: 0; border: 0; border-radius: inherit; background: none; }
+    #s-field { width: 220px; display: flex; flex-direction: column; gap: 32px; padding-bottom: 28px; }
+    #s-field h2 { margin: 0; }
+    #s-select { width: 220px; display: flex; flex-direction: column; gap: 16px; }
+    #s-select h2, #below { margin: 0; }
+    #s-nav { width: 320px; display: flex; flex-direction: column; gap: 16px; }
+    #s-nav h2, #nav-below { margin: 0; }
+    .nav-hold { display: flex; flex-direction: column; gap: 12px; min-height: 240px; }
+    .pan { padding: 12px; border-radius: 14px; background: var(--ban-card); box-shadow: inset 0 0 0 1px var(--ban-line); }
+    .nav-narrow { width: 300px; }
+    #s-drop { display: flex; flex-direction: column; gap: 12px; }
+    #s-drop h2 { margin: 0; }
+    #d-win {
+      position: relative; width: 400px; height: 48px; padding: 0 16px;
+      border-radius: 14px; background: var(--ban-card); box-shadow: inset 0 0 0 1px var(--ban-line);
+    }
+    #d-title { display: inline-block; line-height: 48px; font-weight: 600; }
+    .d-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  </style>
+</head>
+<body>
+  <main class="ban">
+    <section id="s-signs">
+      <h2>Знаки</h2>
+      <div class="row">
+        <span class="cell"><span class="ban-ln dot" aria-hidden="true"></span></span>
+        <span class="cell"><span class="ban-ln line" style="--k:1" aria-hidden="true"></span></span>
+        <span class="pill ban-cap"><span class="ban-lamp" id="lamp-cap" data-kind="error"></span></span>
+        <span class="pill ban-cap ban-out"><span class="ban-lamp" id="lamp-card" data-kind="error"></span></span>
+        <button class="ban-cap ban-sm btn" id="btn-cap" type="button">Готово</button>
+        <span class="pill ban-cap"><button class="ban-ring inner" id="ring-cap" type="button">Ок</button></span>
+      </div>
+      <div class="row" data-theme="dark" id="dark">
+        <span class="pill ban-cap"><span class="ban-lamp" id="lamp-dark" data-kind="rec"></span></span>
+      </div>
+    </section>
+    <section id="s-pen">
+      <h2>Штрих</h2>
+      <div class="row">
+        <div class="penbox" id="pen-empty"></div>
+        <div class="penbox" id="pen-rest"><svg class="ban-pen" aria-hidden="true"><path pathLength="1"></path></svg></div>
+        <div data-state="error">
+          <div class="penbox" id="pen-error"><svg class="ban-pen" aria-hidden="true"><path pathLength="1"></path></svg></div>
+          <span class="ban-note">Нужен адрес почты</span>
+        </div>
+      </div>
+    </section>
+    <section id="s-toggle">
+      <h2>Переключатель</h2>
+      <div class="row">
+        <button class="ban-toggle" id="t-on" type="button" role="switch" aria-checked="true" aria-label="Звук"></button>
+        <button class="ban-toggle" id="t-off" type="button" role="switch" aria-checked="false" aria-label="Уведомления"></button>
+        <button class="ban-button" id="b-quiet" type="button">Проверить</button>
+      </div>
+    </section>
+    <section id="s-field">
+      <h2>Поле</h2>
+      <input class="ban-field" id="f-plain" value="Анна" aria-label="Имя">
+      <input class="ban-field" id="f-mail" value="anna@mail.ru" aria-label="Почта">
+    </section>
+    <section id="s-select">
+      <h2>Список</h2>
+      <select class="ban-select" id="sel-lang" aria-label="Язык">
+        <option>Русский</option>
+        <option>English</option>
+        <option>Español</option>
+      </select>
+      <select class="ban-select" id="sel-one" aria-label="Тема">
+        <option>Как в системе</option>
+      </select>
+      <select class="ban-select" id="sel-raw" aria-label="Шрифт">
+        <option>Системный</option>
+        <option>Моноширинный</option>
+      </select>
+      <p id="below">Текст под списками</p>
+    </section>
+    <section id="s-nav">
+      <h2>Навигация</h2>
+      <div class="nav-hold">
+        <div class="ban-nav" role="tablist" aria-label="Разделы">
+          <button type="button" role="tab" id="tab-look" aria-controls="pan-look" aria-selected="true" tabindex="0">Вид</button>
+          <button type="button" role="tab" id="tab-sound" aria-controls="pan-sound" aria-selected="false" tabindex="-1">Звук</button>
+          <button type="button" role="tab" id="tab-keys" aria-controls="pan-keys" aria-selected="false" tabindex="-1">Клавиши</button>
+        </div>
+        <div class="ban-nav-panels">
+          <div class="pan" role="tabpanel" id="pan-look" aria-labelledby="tab-look" style="height: 200px">Тема, шрифт и плотность</div>
+          <div class="pan" role="tabpanel" id="pan-sound" aria-labelledby="tab-sound" style="height: 110px" hidden inert>Громкость и сигналы</div>
+          <div class="pan" role="tabpanel" id="pan-keys" aria-labelledby="tab-keys" style="height: 60px" hidden inert>Сочетания</div>
+        </div>
+      </div>
+      <p id="nav-below">Текст под навигацией</p>
+      <div class="nav-narrow">
+        <div class="ban-nav" id="nav-long" role="tablist" aria-label="Длинные разделы">
+          <button type="button" role="tab" aria-selected="true" tabindex="0">Общие настройки приложения</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1">Учётные записи и доступ</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1">Уведомления и звуки</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1">Внешний вид и темы</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1">Резервные копии</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1">Расширенные параметры</button>
+        </div>
+      </div>
+    </section>
+    <section id="s-drop">
+      <h2>Капля</h2>
+      <div id="d-win">
+        <b id="d-title">Настройки</b>
+        <div class="ban-drop" id="d-drop"></div>
+      </div>
+      <div class="d-row">
+        <button class="ban-button" id="d-att" type="button" tabindex="0">Внимание</button>
+        <button class="ban-button" id="d-done" type="button" tabindex="0">Готово</button>
+        <button class="ban-button" id="d-think" type="button" tabindex="0">Думает</button>
+        <button class="ban-button" id="d-long" type="button" tabindex="0">Длинное</button>
+        <button class="ban-button" id="d-two" type="button" tabindex="0">Два подряд</button>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="./specimen.ts"></script>
+</body>
+</html>

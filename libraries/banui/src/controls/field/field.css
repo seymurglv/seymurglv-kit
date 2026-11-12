@@ -1,0 +1,38 @@
+/* Text field: a 28 px outlined capsule. The bare input already has the shape; the module wraps it
+   in .ban-field-box, which then carries the outline, the sign at the left, the check mark at the
+   right and the pen below. Focus is shown by a 1.5 px outline, never by a ring. */
+.ban-field {
+  display: block; width: 100%; height: 28px; margin: 0; padding: 0 28px 0 26px;
+  border: 0; border-radius: 14px; background: var(--ban-card);
+  box-shadow: inset 0 0 0 1px var(--ban-muted);
+  transition: box-shadow var(--ban-t-fast);
+}
+/* Focus shows at once; only its loss fades. */
+.ban-field:focus { box-shadow: inset 0 0 0 1.5px var(--ban-text); transition: none; }
+.ban input.ban-field:focus-visible { outline: none; }
+
+.ban-field-box {
+  position: relative; display: block; border-radius: 14px; background: var(--ban-card);
+  box-shadow: inset 0 0 0 1px var(--ban-muted);
+  transition: box-shadow var(--ban-t-fast);
+}
+.ban-field-box:focus-within { box-shadow: inset 0 0 0 1.5px var(--ban-text); transition: none; }
+/* Inside the box the input is bare: the box's own outline shows through. */
+.ban-field-box > .ban-field, .ban-field-box > .ban-field:focus { background: none; box-shadow: none; }
+
+/* Sign in the text ink: centered 14 px from the left edge; a dot at rest, a line while typing, a lamp in done and error. */
+.ban-field-box > .ban-field-sign { left: 14px; pointer-events: none; }
+.ban-field-box[data-state="typing"] > .ban-field-sign { --k: .72; }
+
+/* Check mark: two lines centered 15 px from the right edge, shown in done. */
+.ban-field-box > .ban-field-tick {
+  left: calc(100% - 15px); opacity: 0; pointer-events: none;
+  transition: opacity var(--ban-t-fast) var(--ban-e-out);
+}
+.ban-field-box > .ban-field-sign + .ban-field-tick { --x: -2.6px; --y: 1.3px; --r: -45deg; --k: .34; }
+.ban-field-box > .ban-field-tick + .ban-field-tick { --x: 2px; --r: 45deg; --k: .64; }
+.ban-field-box[data-state="done"] > .ban-field-tick { opacity: 1; }
+
+/* Pen: the underline under the text, the note below the box. */
+.ban-field-box > .ban-pen { position: absolute; left: 26px; top: 20px; }
+.ban-field-box > .ban-note { position: absolute; left: 27px; top: 31px; }

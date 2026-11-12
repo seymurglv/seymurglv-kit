@@ -1,0 +1,42 @@
+{
+  "name": "ember",
+  "description": "How warm this chat's prompt cache is: one quiet row above the prompt with a ring of minutes until it goes cold and the cost of a cold restart, keep-warm pings on a press (on their own only for chats over 300k tokens), /board with every local chat, and /ember:handoff to continue in a fresh chat.",
+  "author": {
+    "name": "seymurglv"
+  },
+  "license": "MIT",
+  "keywords": ["prompt-cache", "cost", "keep-warm", "handoff", "function-hooks", "ui"],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "ttl": {
+      "type": "string",
+      "title": "Cache lifetime",
+      "description": "How long the prompt cache lives idle: auto measures it (an hour on a subscription until a request shows five minutes), or set 5 or 60 minutes.",
+      "required": false,
+      "options": ["auto", "5", "60"],
+      "default": "auto"
+    },
+    "autoKeepTokens": {
+      "type": "number",
+      "title": "Keep warm by itself from (tokens)",
+      "description": "A chat with at least this many tokens in context is kept warm by itself in its last minutes. 0 keeps none by itself.",
+      "required": false,
+      "default": 300000
+    },
+    "keepWarmHours": {
+      "type": "number",
+      "title": "Keep warm for (hours)",
+      "description": "How long keeping warm lasts once on, before it stops by itself.",
+      "required": false,
+      "default": 4
+    },
+    "language": {
+      "type": "string",
+      "title": "Interface language",
+      "description": "Language of ember's own words: the band, the board, toasts and command answers.",
+      "required": false,
+      "options": ["en", "ru"],
+      "default": "en"
+    }
+  }
+}

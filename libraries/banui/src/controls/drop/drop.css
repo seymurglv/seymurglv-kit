@@ -1,0 +1,47 @@
+/* Status drop. A filled capsule in the top right corner of its positioned window: 24 x 24 at rest,
+   44 wide while thinking, and as wide as its message, growing leftward from the right edge.
+   Before the module runs, .ban-drop alone is already the resting capsule. It clips without being
+   scrollable (hidden is the fallback where clip is unknown). */
+.ban-drop {
+  position: absolute; right: 16px; top: 12px; width: 24px; height: 24px;
+  border-radius: 12px; overflow: hidden; overflow: clip;
+  background: var(--ban-cap); color: var(--ban-cap-ink); font-size: 12px;
+  transition: width var(--ban-t-slow) var(--ban-e-spring);
+}
+.ban-drop[data-state="thinking"] { width: 44px; }
+
+/* The lamp: centre 12 px from the left edge, so it rides the growing edge. */
+.ban-drop > .ban-lamp {
+  left: 10.5px; top: 10.5px;
+  transition: background-color var(--ban-t-fast), opacity var(--ban-t-fast);
+}
+.ban-drop[data-state="thinking"] > .ban-lamp { opacity: 0; }
+
+/* Three thinking dots in the 44 px capsule. */
+.ban-drop-dots {
+  position: absolute; left: 0; top: 0; width: 44px; height: 24px;
+  opacity: 0; transition: opacity var(--ban-t-fast);
+}
+.ban-drop[data-state="thinking"] > .ban-drop-dots { opacity: 1; }
+.ban-drop-dots > .ban-ln:nth-child(2) { animation-delay: .18s; }
+.ban-drop-dots > .ban-ln:nth-child(3) { animation-delay: .36s; }
+
+/* The text starts 24 px from the left and ends at the cross's 24 px box. */
+.ban-drop > button {
+  position: absolute; top: 0; height: 24px; margin: 0; padding: 0;
+  border: 0; border-radius: 12px; background: none; font: inherit; color: inherit; cursor: default;
+  opacity: 0; transition: opacity var(--ban-t-fast);
+}
+.ban-drop[data-state="message"] > button { opacity: 1; }
+.ban-drop:not([data-state="message"]) > button { pointer-events: none; }
+.ban-drop-text {
+  left: 24px; right: 24px; text-align: left; line-height: 24px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ban-drop-close { right: 0; width: 24px; }
+
+/* Read by assistive technology, not shown. */
+.ban-drop-live {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}

@@ -1,0 +1,32 @@
+{
+  "name": "banui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./banui.css": "./dist/banui.css"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "build": "tsc -p tsconfig.build.json && node scripts/build-css.mjs",
+    "shots": "node scripts/shots.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "@types/node": "^26.6.6",
+    "jsdom": "^31.0.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}

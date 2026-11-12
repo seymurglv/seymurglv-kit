@@ -1,0 +1,88 @@
+/* banui tokens.
+   Theme follows prefers-color-scheme; data-theme="light" or "dark" on any ancestor sets the theme of its subtree.
+   A lamp takes the -cap tone on a capsule and the -card tone on a card or the page. */
+
+:root,
+[data-theme="light"] {
+  --ban-bg: #FBFBFA;
+  --ban-card: #FFFFFF;
+  --ban-surface2: #F3F3F1;
+  --ban-text: #111111;
+  --ban-muted: #6B6B67;
+  --ban-faint: #C4C4C0;
+  --ban-line: #ECECE9;
+  --ban-cap: #1C1C1F;
+  --ban-cap-ink: #ECECEA;
+  --ban-pen: #2753C9;
+  --ban-done-cap: #33C27A;
+  --ban-done-card: #0B6B5B;
+  --ban-error-cap: #F5B82E;
+  --ban-error-card: #BD7313;
+  --ban-rec-cap: #FF5A2E;
+  --ban-rec-card: #9E1708;
+  --ban-attention-cap: #5C8DFF;
+  --ban-attention-card: #2F6BFF;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ban-bg: #0E0E0F;
+    --ban-card: #151517;
+    --ban-surface2: #1C1C1F;
+    --ban-text: #ECECEA;
+    --ban-muted: #85858A;
+    --ban-faint: #4A4A4E;
+    --ban-line: #232326;
+    --ban-cap: #ECECEA;
+    --ban-cap-ink: #111111;
+    --ban-pen: #8FB0FF;
+    --ban-done-cap: #0B6B5B;
+    --ban-done-card: #33C27A;
+    --ban-error-cap: #BD7313;
+    --ban-error-card: #F5B82E;
+    --ban-rec-cap: #9E1708;
+    --ban-rec-card: #FF5A2E;
+    --ban-attention-cap: #2F6BFF;
+    --ban-attention-card: #5C8DFF;
+    color-scheme: dark;
+  }
+}
+
+[data-theme="dark"] {
+  --ban-bg: #0E0E0F;
+  --ban-card: #151517;
+  --ban-surface2: #1C1C1F;
+  --ban-text: #ECECEA;
+  --ban-muted: #85858A;
+  --ban-faint: #4A4A4E;
+  --ban-line: #232326;
+  --ban-cap: #ECECEA;
+  --ban-cap-ink: #111111;
+  --ban-pen: #8FB0FF;
+  --ban-done-cap: #0B6B5B;
+  --ban-done-card: #33C27A;
+  --ban-error-cap: #BD7313;
+  --ban-error-card: #F5B82E;
+  --ban-rec-cap: #9E1708;
+  --ban-rec-card: #FF5A2E;
+  --ban-attention-cap: #2F6BFF;
+  --ban-attention-card: #5C8DFF;
+  color-scheme: dark;
+}
+
+/* Theme-independent */
+:root {
+  --ban-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --ban-num: "Bebas Neue", sans-serif;
+  --ban-hand: "Caveat", "Ink Free", "Segoe Print", cursive;
+  --ban-e-out: cubic-bezier(.22, 1, .36, 1);
+  --ban-e-spring: cubic-bezier(.3, 1.25, .5, 1);
+  --ban-t-press: .12s;
+  --ban-t-fast: .2s;
+  --ban-t-mid: .3s;
+  --ban-t-slow: .42s;
+  --ban-t-pen: .4s;
+  --ban-t-fade: .16s;
+  --ban-shadow: 0 10px 24px -12px rgba(0, 0, 0, .4);
+}

@@ -1,0 +1,65 @@
+/* Dropdown list. The bare select is already a 28 px outlined capsule. The module puts it, hidden,
+   in .ban-select-box, which keeps the 28 px in the layout; .ban-select-pop grows downward from it
+   into the list, over the content below. Open height: 28 + 26 per row + 4. */
+.ban-select {
+  appearance: none; -webkit-appearance: none;
+  display: block; width: 100%; height: 28px; margin: 0; padding: 0 28px 0 12px;
+  border: 0; border-radius: 14px; background: var(--ban-card); color: var(--ban-text);
+  box-shadow: inset 0 0 0 1px var(--ban-muted); font: inherit;
+}
+.ban-select[hidden] { display: none; }
+.ban-select:disabled { color: var(--ban-muted); box-shadow: inset 0 0 0 1px var(--ban-line); }
+
+.ban-select-box { position: relative; display: block; width: 100%; height: 28px; }
+
+/* The open list stays above its neighbours until it has folded back. It clips without being
+   scrollable (hidden is the fallback where clip is unknown). */
+.ban-select-pop {
+  position: absolute; left: 0; top: 0; right: 0; z-index: 1;
+  height: 28px; overflow: hidden; overflow: clip; border-radius: 14px;
+  background: var(--ban-card); color: var(--ban-text);
+  box-shadow: inset 0 0 0 1px var(--ban-muted);
+  transition: height var(--ban-t-mid) var(--ban-e-spring), box-shadow var(--ban-t-mid), z-index 0s var(--ban-t-mid);
+}
+.ban-select-box[data-open="true"] > .ban-select-pop {
+  z-index: 2; height: calc(32px + 26px * var(--ban-rows, 0));
+  box-shadow: inset 0 0 0 1px var(--ban-muted), var(--ban-shadow);
+  transition: height var(--ban-t-mid) var(--ban-e-spring), box-shadow var(--ban-t-mid);
+}
+
+/* Value: the label from 12 px, the arrow in a 20 px box 4 px from the right edge. */
+.ban-select-value {
+  position: relative; display: block; width: 100%; height: 28px; margin: 0; padding: 0 28px 0 12px;
+  border: 0; border-radius: 14px; background: none; text-align: left; cursor: default;
+}
+.ban-select-label { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ban-select-arrow { position: absolute; right: 4px; top: 4px; width: 20px; height: 20px; }
+.ban-select-arrow-l { --x: -2.2px; --r: -45deg; --k: .34; }
+.ban-select-arrow-r { --x: 2.2px; --r: 45deg; --k: .34; }
+.ban-select-box[data-open="true"] .ban-select-arrow-l { --r: 45deg; }
+.ban-select-box[data-open="true"] .ban-select-arrow-r { --r: -45deg; }
+
+/* Disabled: the outline in the line tone, the label and the arrow in muted ink. */
+.ban-select-box[data-disabled] > .ban-select-pop { box-shadow: inset 0 0 0 1px var(--ban-line); }
+.ban-select-value:disabled { color: var(--ban-muted); }
+
+/* Rows: 26 px, 4 px in from the sides, text from 20 px; the selected one in text ink with a line
+   centered 10 px from the edge. The row under the pointer gets the second surface; the row under
+   the keys gets the ring drawn inward. */
+.ban-select-list {
+  padding: 0 4px; visibility: hidden;
+  transition: visibility 0s var(--ban-t-mid);
+}
+.ban .ban-select-list:is(:focus, :focus-visible) { outline: none; }
+.ban-select-box[data-open="true"] .ban-select-list { visibility: visible; transition: none; }
+.ban-select-row {
+  position: relative; height: 26px; padding: 0 8px 0 16px; border-radius: 7px;
+  line-height: 26px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: var(--ban-muted); cursor: default;
+}
+.ban-select-list:not([data-keys]) > .ban-select-row[data-active]:not([aria-disabled="true"]) { background: var(--ban-surface2); }
+.ban-select-list[data-keys] > .ban-select-row[data-active] { outline: 2px solid var(--ban-text); outline-offset: -3px; }
+.ban-select-row[aria-selected="true"] { color: var(--ban-text); }
+.ban-select-row[aria-disabled="true"] { color: var(--ban-muted); opacity: .5; }
+.ban-select-mark { left: 6px; --k: .6; opacity: 0; }
+.ban-select-row[aria-selected="true"] > .ban-select-mark { opacity: 1; }
