@@ -11,7 +11,7 @@ A quiet interface where everything is built from five signs, and a state is a ne
 
 ## Start here
 
-1. Copy `banui.css` (next to this file) into the page unchanged. It holds every token and the sign primitives. Do not rename or re-pick its values.
+1. Copy the `kit/` folder (next to this file) beside the page and link `kit/banui.css` unchanged. It holds every token, the sign primitives and the ready controls; `kit/index.js` builds the controls (`mount()`). A working screen to start from is `examples/screen-settings/`. Do not rename or re-pick its values.
 2. Build each control from the signs. The recipes and glyph offsets for the existing controls are in `references/controls.md`: read it before building a field, toggle, list, navigation, status drop or pen mark.
 3. Run the self-check at the end of this file before you show the work.
 

@@ -1,6 +1,6 @@
 # banui controls and glyphs
 
-Recipes for the controls that exist. All use the tokens and primitives from `../banui.css`.
+Recipes for the controls that exist. All use the tokens and primitives from `../kit/banui.css`.
 
 ## Contents
 

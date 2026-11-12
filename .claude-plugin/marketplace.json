@@ -15,7 +15,7 @@
     {
       "name": "banui",
       "source": "./libraries/banui",
-      "description": "The banui design language: every control built from five signs, with a lamp color map, starter styles and control recipes.",
+      "description": "The banui design language: every control built from five signs, with a lamp color map, the built library, a ready settings screen and control recipes.",
       "skills": [
         "./skills/banui"
       ]

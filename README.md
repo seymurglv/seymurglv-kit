@@ -36,7 +36,7 @@ Open a folder to see what is inside.
 
 | Name | Claude Code | OpenCode | What it is |
 |---|---|---|---|
-| [`banui`](libraries/banui) | skill | skill | A UI design language where every control is built from five signs (capsule, line, dot, lamp, pen stroke). The library is framework-free TypeScript and CSS with a demo and its tests; the [skill for an agent](libraries/banui/skills/banui) inside it carries the lamp color map, starter styles and control recipes |
+| [`banui`](libraries/banui) | skill | skill | A UI design language where every control is built from five signs (capsule, line, dot, lamp, pen stroke). The library is framework-free TypeScript and CSS with a demo and its tests; the [skill for an agent](libraries/banui/skills/banui) inside it carries the lamp color map, the built library, a ready settings screen and control recipes |
 
 </details>
 
