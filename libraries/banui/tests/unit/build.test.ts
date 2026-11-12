@@ -21,5 +21,6 @@ test('собранные файлы загружаются', () => {
   expect(css).not.toMatch(/\.\.\/fonts\//)
   expect(css).toMatch(/url\("\.\/fonts\/caveat-latin-600\.woff2"\)/)
   expect(css).toMatch(/\.ban-drop/)
+  expect(css).toMatch(/\.ban-grown/)
   for (const f of ['caveat-latin-600.woff2', 'caveat-cyrillic-600.woff2', 'OFL.txt']) expect(existsSync(resolve(out, 'fonts', f))).toBe(true)
 }, 60_000)

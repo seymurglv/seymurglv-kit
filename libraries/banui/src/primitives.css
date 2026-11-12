@@ -1,4 +1,5 @@
-/* Primitives for pages built by hand from the signs; the library's own controls do not use them. */
+/* Primitives for pages built by hand from the signs. They close banui.css, after the controls;
+   the library's own controls do not use them. */
 
 /* Secondary text. */
 .ban-muted { color: var(--ban-muted); }
@@ -27,6 +28,3 @@
 /* A pen mark for a record or a first time carries data-pen itself and shows without an error. */
 .ban-pen[data-pen] path { stroke-dashoffset: 0; }
 .ban-note[data-pen] { opacity: 1; transition-delay: .25s; }
-
-/* A lamp that changes meaning fades to its new tone. */
-.ban-lamp { transition: background-color var(--ban-t-fast); }

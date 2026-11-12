@@ -128,7 +128,7 @@
 npm run dev        # примеры: /demo/specimen.html и /demo/settings.html на http://127.0.0.1:5179
 npm run test:unit  # модульные проверки
 npm run test:e2e   # проверки в браузерах
-npm run build      # dist/: модули, объявления типов, banui.css и шрифты
+npm run build      # dist/ и её точная копия в skills/banui/kit/: модули, объявления типов, banui.css и шрифты
 npm run shots      # снимки окна настроек в assets/
 ```
 
@@ -140,14 +140,16 @@ src/
   signs.css          корень .ban, капсула, линия-точка, лампа, фокус
   pen/               штрих ручки и рукописная пометка
   controls/          toggle, field, select, nav, drop, button
+  primitives.css     примитивы для страниц, собранных из знаков вручную
   fonts/             Caveat 600 и его лицензия
   motion.ts          смена подписи, высота, ширина текста
   index.ts           вход и mount()
   banui.css          собирает всё вместе
 demo/                образцы знаков и окно настроек
 tests/               модульные и браузерные проверки
-scripts/             сборка стилей и снимки
-skills/banui/        правила языка и стартовые стили для макетов
+scripts/             сборка стилей, копия сборки в kit/ и снимки
+skills/banui/        правила языка для агента
+  kit/               собранная библиотека, копия dist/; её пишет build
 assets/              снимки для этого файла
 ```
 

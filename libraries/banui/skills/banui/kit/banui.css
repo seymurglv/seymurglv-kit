@@ -1,0 +1,449 @@
+/* banui tokens.
+   Theme follows prefers-color-scheme; data-theme="light" or "dark" on any ancestor sets the theme of its subtree.
+   A lamp takes the -cap tone on a capsule and the -card tone on a card or the page. */
+
+:root,
+[data-theme="light"] {
+  --ban-bg: #FBFBFA;
+  --ban-card: #FFFFFF;
+  --ban-surface2: #F3F3F1;
+  --ban-text: #111111;
+  --ban-muted: #6B6B67;
+  --ban-faint: #C4C4C0;
+  --ban-line: #ECECE9;
+  --ban-cap: #1C1C1F;
+  --ban-cap-ink: #ECECEA;
+  --ban-pen: #2753C9;
+  --ban-done-cap: #33C27A;
+  --ban-done-card: #0B6B5B;
+  --ban-error-cap: #F5B82E;
+  --ban-error-card: #BD7313;
+  --ban-rec-cap: #FF5A2E;
+  --ban-rec-card: #9E1708;
+  --ban-attention-cap: #5C8DFF;
+  --ban-attention-card: #2F6BFF;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ban-bg: #0E0E0F;
+    --ban-card: #151517;
+    --ban-surface2: #1C1C1F;
+    --ban-text: #ECECEA;
+    --ban-muted: #85858A;
+    --ban-faint: #4A4A4E;
+    --ban-line: #232326;
+    --ban-cap: #ECECEA;
+    --ban-cap-ink: #111111;
+    --ban-pen: #8FB0FF;
+    --ban-done-cap: #0B6B5B;
+    --ban-done-card: #33C27A;
+    --ban-error-cap: #BD7313;
+    --ban-error-card: #F5B82E;
+    --ban-rec-cap: #9E1708;
+    --ban-rec-card: #FF5A2E;
+    --ban-attention-cap: #2F6BFF;
+    --ban-attention-card: #5C8DFF;
+    color-scheme: dark;
+  }
+}
+
+[data-theme="dark"] {
+  --ban-bg: #0E0E0F;
+  --ban-card: #151517;
+  --ban-surface2: #1C1C1F;
+  --ban-text: #ECECEA;
+  --ban-muted: #85858A;
+  --ban-faint: #4A4A4E;
+  --ban-line: #232326;
+  --ban-cap: #ECECEA;
+  --ban-cap-ink: #111111;
+  --ban-pen: #8FB0FF;
+  --ban-done-cap: #0B6B5B;
+  --ban-done-card: #33C27A;
+  --ban-error-cap: #BD7313;
+  --ban-error-card: #F5B82E;
+  --ban-rec-cap: #9E1708;
+  --ban-rec-card: #FF5A2E;
+  --ban-attention-cap: #2F6BFF;
+  --ban-attention-card: #5C8DFF;
+  color-scheme: dark;
+}
+
+/* Theme-independent */
+:root {
+  --ban-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --ban-num: "Bebas Neue", sans-serif;
+  --ban-hand: "Caveat", "Ink Free", "Segoe Print", cursive;
+  --ban-e-out: cubic-bezier(.22, 1, .36, 1);
+  --ban-e-spring: cubic-bezier(.3, 1.25, .5, 1);
+  --ban-t-press: .12s;
+  --ban-t-fast: .2s;
+  --ban-t-mid: .3s;
+  --ban-t-slow: .42s;
+  --ban-t-pen: .4s;
+  --ban-t-fade: .16s;
+  --ban-shadow: 0 10px 24px -12px rgba(0, 0, 0, .4);
+}
+
+/* banui signs: root, capsule, line-dot, lamp, focus ring. */
+
+/* ---------- root ---------- */
+.ban { font: 13px/1.3 var(--ban-ui); }
+/* The root and any themed subtree inside it are surfaces with their own ink.
+   :where keeps the subtree rule at root weight, so a capsule's own colors still win. */
+.ban, .ban :where([data-theme]) { background: var(--ban-bg); color: var(--ban-text); }
+.ban *, .ban *::before, .ban *::after { box-sizing: border-box; }
+/* Zero added specificity, so .ban-cap and .ban-sm win on a button. */
+.ban :where(button, input) { font: inherit; color: inherit; }
+.ban-sm { font-size: 12px; }
+
+/* ---------- capsule ---------- */
+/* Filled = on or selected; .ban-out = off or not selected. */
+.ban-cap {
+  position: relative; border: 0; border-radius: 999px;
+  background: var(--ban-cap); color: var(--ban-cap-ink);
+  transition: background-color var(--ban-t-fast), color var(--ban-t-fast), box-shadow var(--ban-t-fast);
+}
+.ban-out { background: var(--ban-card); color: var(--ban-text); box-shadow: inset 0 0 0 1px var(--ban-muted); }
+
+/* ---------- line and dot: one element ---------- */
+/* Sits at the center of a position:relative parent.
+   --b base length in px (unitless, default 14), --k length (1 = the whole line;
+   unset = the 3 x 3 dot), --x, --y offset, --r rotation,
+   --w thickness scale (1 = 2 px, 1.5 = 3 px). */
+.ban-ln {
+  position: absolute; left: 50%; top: 50%;
+  width: 2px; height: calc(var(--b, 14) * 1px); margin: calc(var(--b, 14) * -.5px) 0 0 -1px;
+  background: currentColor;
+  --kv: var(--k, calc(3 / var(--b, 14)));
+  --wv: var(--w, clamp(1, calc(1.5 - (var(--kv) - 3 / var(--b, 14)) * 6), 1.5));
+  border-radius: 1px / calc(1px * var(--wv) / var(--kv));
+  transform: translate(var(--x, 0px), var(--y, 0px)) rotate(var(--r, 0deg)) scale(var(--wv), var(--kv));
+  /* The radius follows the morph, so the ends stay round between dot and line. */
+  transition: transform var(--ban-t-mid) var(--ban-e-spring), border-radius var(--ban-t-mid) var(--ban-e-spring);
+}
+
+/* ---------- lamp ---------- */
+/* A 3 px dot in ink; data-kind lights it in the tone of the surface it sits on. */
+.ban-lamp { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: currentColor; }
+:is(.ban-lamp, .ban-ln)[data-kind="done"] { background: var(--ban-done-card); }
+:is(.ban-lamp, .ban-ln)[data-kind="error"] { background: var(--ban-error-card); }
+:is(.ban-lamp, .ban-ln)[data-kind="rec"] { background: var(--ban-rec-card); }
+:is(.ban-lamp, .ban-ln)[data-kind="attention"] { background: var(--ban-attention-card); }
+.ban-cap:not(.ban-out) :is(.ban-lamp, .ban-ln)[data-kind="done"] { background: var(--ban-done-cap); }
+.ban-cap:not(.ban-out) :is(.ban-lamp, .ban-ln)[data-kind="error"] { background: var(--ban-error-cap); }
+.ban-cap:not(.ban-out) :is(.ban-lamp, .ban-ln)[data-kind="rec"] { background: var(--ban-rec-cap); }
+.ban-cap:not(.ban-out) :is(.ban-lamp, .ban-ln)[data-kind="attention"] { background: var(--ban-attention-cap); }
+
+.ban-breathe { animation: ban-breathe 1s ease-in-out infinite alternate; }
+@keyframes ban-breathe { from { opacity: .35; } to { opacity: 1; } }
+
+/* ---------- focus ---------- */
+/* .ban-ring shows the ring on any focus, also focus moved by script after a pointer press. */
+.ban :is(:focus-visible, .ban-ring:focus) { outline: 2px solid var(--ban-text); outline-offset: 2px; }
+.ban .ban-cap:not(.ban-out) :is(:focus-visible, .ban-ring:focus) { outline-color: var(--ban-cap-ink); outline-offset: -3px; }
+/* Inside a container that clips, the ring is drawn inward. */
+.ban .ban-clip :is(:focus-visible, .ban-ring:focus) { outline-offset: -3px; }
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .ban, .ban *, .ban *::before, .ban *::after { transition: none !important; animation: none !important; }
+}
+
+/* The pen is shown by the nearest state-carrying ancestor: under [data-state="error"]
+   the underline draws and the note appears; in every other state it is undrawn and transparent. */
+@font-face {
+  font-family: "Caveat";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./fonts/caveat-latin-600.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: "Caveat";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./fonts/caveat-cyrillic-600.woff2") format("woff2");
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+
+.ban-pen { height: 8px; overflow: visible; pointer-events: none; }
+.ban-pen path {
+  fill: none;
+  stroke: var(--ban-pen);
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset var(--ban-t-pen) var(--ban-e-out);
+}
+[data-state="error"] .ban-pen path { stroke-dashoffset: 0; }
+
+.ban-note {
+  font: 600 17px/1 var(--ban-hand);
+  color: var(--ban-pen);
+  transform: rotate(-3deg);
+  transform-origin: left;
+  display: inline-block;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .2s;
+}
+[data-state="error"] .ban-note { opacity: 1; transition-delay: .25s; }
+
+/* Toggle: a 36 x 20 capsule with one line-dot sign.
+   On = filled, a 2 x 10 line at the right; off (anything but aria-checked="true") =
+   outlined, a 3 x 3 dot at the left. */
+.ban-toggle {
+  position: relative; width: 36px; height: 20px; padding: 0; border: 0; border-radius: 10px;
+  background: var(--ban-cap); color: var(--ban-cap-ink);
+  transition: background-color var(--ban-t-fast), color var(--ban-t-fast), box-shadow var(--ban-t-fast);
+}
+.ban-toggle:not([aria-checked="true"]) {
+  background: var(--ban-card); color: var(--ban-muted);
+  box-shadow: inset 0 0 0 1.5px var(--ban-muted);
+}
+.ban-toggle > .ban-ln {
+  --b: 10; --x: -8px;
+  transition: transform var(--ban-t-fast) var(--ban-e-spring), border-radius var(--ban-t-fast) var(--ban-e-spring);
+}
+.ban-toggle[aria-checked="true"] > .ban-ln { --k: 1; --x: 8px; }
+
+/* Quiet button: a 24 px outlined capsule that gives a little under the press. */
+.ban-button {
+  height: 24px; padding: 0 10px; border: 0; border-radius: 12px;
+  font-size: 12px; background: var(--ban-card);
+  box-shadow: inset 0 0 0 1px var(--ban-muted);
+  transition: transform var(--ban-t-press);
+}
+.ban-button:active { transform: scale(.97); }
+
+/* Text field: a 28 px outlined capsule. The bare input already has the shape; the module wraps it
+   in .ban-field-box, which then carries the outline, the sign at the left, the check mark at the
+   right and the pen below. Focus is shown by a 1.5 px outline, never by a ring. */
+.ban-field {
+  display: block; width: 100%; height: 28px; margin: 0; padding: 0 28px 0 26px;
+  border: 0; border-radius: 14px; background: var(--ban-card);
+  box-shadow: inset 0 0 0 1px var(--ban-muted);
+  transition: box-shadow var(--ban-t-fast);
+}
+/* Focus shows at once; only its loss fades. */
+.ban-field:focus { box-shadow: inset 0 0 0 1.5px var(--ban-text); transition: none; }
+.ban input.ban-field:focus-visible { outline: none; }
+
+.ban-field-box {
+  position: relative; display: block; border-radius: 14px; background: var(--ban-card);
+  box-shadow: inset 0 0 0 1px var(--ban-muted);
+  transition: box-shadow var(--ban-t-fast);
+}
+.ban-field-box:focus-within { box-shadow: inset 0 0 0 1.5px var(--ban-text); transition: none; }
+/* Inside the box the input is bare: the box's own outline shows through. */
+.ban-field-box > .ban-field, .ban-field-box > .ban-field:focus { background: none; box-shadow: none; }
+
+/* Sign in the text ink: centered 14 px from the left edge; a dot at rest, a line while typing, a lamp in done and error. */
+.ban-field-box > .ban-field-sign { left: 14px; pointer-events: none; }
+.ban-field-box[data-state="typing"] > .ban-field-sign { --k: .72; }
+
+/* Check mark: two lines centered 15 px from the right edge, shown in done. */
+.ban-field-box > .ban-field-tick {
+  left: calc(100% - 15px); opacity: 0; pointer-events: none;
+  transition: opacity var(--ban-t-fast) var(--ban-e-out);
+}
+.ban-field-box > .ban-field-sign + .ban-field-tick { --x: -2.6px; --y: 1.3px; --r: -45deg; --k: .34; }
+.ban-field-box > .ban-field-tick + .ban-field-tick { --x: 2px; --r: 45deg; --k: .64; }
+.ban-field-box[data-state="done"] > .ban-field-tick { opacity: 1; }
+
+/* Pen: the underline under the text, the note below the box. */
+.ban-field-box > .ban-pen { position: absolute; left: 26px; top: 20px; }
+.ban-field-box > .ban-note { position: absolute; left: 27px; top: 31px; }
+
+/* Dropdown list. The bare select is already a 28 px outlined capsule. The module puts it, hidden,
+   in .ban-select-box, which keeps the 28 px in the layout; .ban-select-pop grows downward from it
+   into the list, over the content below. Open height: 28 + 26 per row + 4. */
+.ban-select {
+  appearance: none; -webkit-appearance: none;
+  display: block; width: 100%; height: 28px; margin: 0; padding: 0 28px 0 12px;
+  border: 0; border-radius: 14px; background: var(--ban-card); color: var(--ban-text);
+  box-shadow: inset 0 0 0 1px var(--ban-muted); font: inherit;
+}
+.ban-select[hidden] { display: none; }
+.ban-select:disabled { color: var(--ban-muted); box-shadow: inset 0 0 0 1px var(--ban-line); }
+
+.ban-select-box { position: relative; display: block; width: 100%; height: 28px; }
+
+/* The open list stays above its neighbours until it has folded back. It clips without being
+   scrollable (hidden is the fallback where clip is unknown). */
+.ban-select-pop {
+  position: absolute; left: 0; top: 0; right: 0; z-index: 1;
+  height: 28px; overflow: hidden; overflow: clip; border-radius: 14px;
+  background: var(--ban-card); color: var(--ban-text);
+  box-shadow: inset 0 0 0 1px var(--ban-muted);
+  transition: height var(--ban-t-mid) var(--ban-e-spring), box-shadow var(--ban-t-mid), z-index 0s var(--ban-t-mid);
+}
+.ban-select-box[data-open="true"] > .ban-select-pop {
+  z-index: 2; height: calc(32px + 26px * var(--ban-rows, 0));
+  box-shadow: inset 0 0 0 1px var(--ban-muted), var(--ban-shadow);
+  transition: height var(--ban-t-mid) var(--ban-e-spring), box-shadow var(--ban-t-mid);
+}
+
+/* Value: the label from 12 px, the arrow in a 20 px box 4 px from the right edge. */
+.ban-select-value {
+  position: relative; display: block; width: 100%; height: 28px; margin: 0; padding: 0 28px 0 12px;
+  border: 0; border-radius: 14px; background: none; text-align: left; cursor: default;
+}
+.ban-select-label { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ban-select-arrow { position: absolute; right: 4px; top: 4px; width: 20px; height: 20px; }
+.ban-select-arrow-l { --x: -2.2px; --r: -45deg; --k: .34; }
+.ban-select-arrow-r { --x: 2.2px; --r: 45deg; --k: .34; }
+.ban-select-box[data-open="true"] .ban-select-arrow-l { --r: 45deg; }
+.ban-select-box[data-open="true"] .ban-select-arrow-r { --r: -45deg; }
+
+/* Disabled: the outline in the line tone, the label and the arrow in muted ink. */
+.ban-select-box[data-disabled] > .ban-select-pop { box-shadow: inset 0 0 0 1px var(--ban-line); }
+.ban-select-value:disabled { color: var(--ban-muted); }
+
+/* Rows: 26 px, 4 px in from the sides, text from 20 px; the selected one in text ink with a line
+   centered 10 px from the edge. The row under the pointer gets the second surface; the row under
+   the keys gets the ring drawn inward. */
+.ban-select-list {
+  padding: 0 4px; visibility: hidden;
+  transition: visibility 0s var(--ban-t-mid);
+}
+.ban .ban-select-list:is(:focus, :focus-visible) { outline: none; }
+.ban-select-box[data-open="true"] .ban-select-list { visibility: visible; transition: none; }
+.ban-select-row {
+  position: relative; height: 26px; padding: 0 8px 0 16px; border-radius: 7px;
+  line-height: 26px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: var(--ban-muted); cursor: default;
+}
+.ban-select-list:not([data-keys]) > .ban-select-row[data-active]:not([aria-disabled="true"]) { background: var(--ban-surface2); }
+.ban-select-list[data-keys] > .ban-select-row[data-active] { outline: 2px solid var(--ban-text); outline-offset: -3px; }
+.ban-select-row[aria-selected="true"] { color: var(--ban-text); }
+.ban-select-row[aria-disabled="true"] { color: var(--ban-muted); opacity: .5; }
+.ban-select-mark { left: 6px; --k: .6; opacity: 0; }
+.ban-select-row[aria-selected="true"] > .ban-select-mark { opacity: 1; }
+
+/* Section navigation. A 28 px track with a 1 px line drawn inward and 3 px padding; 22 px tabs.
+   The module puts .ban-nav-thumb, the filled capsule, under the selected tab. Before it runs the
+   selected tab carries the capsule itself, so the track already has its look. */
+.ban-nav {
+  position: relative; display: flex; width: max-content; max-width: 100%; height: 28px; padding: 3px;
+  border-radius: 14px; background: var(--ban-card); box-shadow: inset 0 0 0 1px var(--ban-line);
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+}
+.ban-nav::-webkit-scrollbar { display: none; }
+
+.ban-nav > [role="tab"] {
+  position: relative; flex: none; height: 22px; margin: 0; padding: 0 10px;
+  border: 0; border-radius: 11px; background: none;
+  font-size: 12px; line-height: 22px; white-space: nowrap; color: var(--ban-muted); cursor: default;
+  transition: color var(--ban-t-fast);
+}
+.ban-nav > [role="tab"][aria-selected="true"] { background: var(--ban-cap); color: var(--ban-cap-ink); }
+.ban-nav > .ban-nav-thumb ~ [role="tab"] { background: none; }
+
+.ban-nav-thumb {
+  position: absolute; left: 0; top: 3px; height: 22px; border-radius: 11px; background: var(--ban-cap);
+  transition: transform var(--ban-t-mid) var(--ban-e-spring), width var(--ban-t-mid) var(--ban-e-spring);
+}
+
+/* The track scrolls, so the ring is drawn inward; on the capsule it is in capsule ink. */
+.ban .ban-nav > [role="tab"]:is(:focus-visible, .ban-ring:focus) { outline-offset: -3px; }
+.ban .ban-nav > [role="tab"][aria-selected="true"]:is(:focus-visible, .ban-ring:focus) { outline-color: var(--ban-cap-ink); }
+
+/* Sections: the selected one sets the height; the rest lie on top of it, out of the flow, and fade.
+   A hidden section never reaches past the box, so it adds nothing to the page's scroll height. */
+.ban-nav-panels { position: relative; }
+.ban-nav-panels > [role="tabpanel"] {
+  transition: opacity var(--ban-t-mid) var(--ban-e-out), transform var(--ban-t-mid) var(--ban-e-out);
+}
+.ban-nav-panels > [role="tabpanel"][inert] {
+  position: absolute; left: 0; top: 0; width: 100%; max-height: 100%; overflow: hidden; opacity: 0; visibility: hidden;
+  transition: opacity var(--ban-t-fade), visibility 0s var(--ban-t-fade);
+}
+.ban-nav-panels > [role="tabpanel"][data-enter] { opacity: 0; transition: none; }
+.ban-nav-panels > [role="tabpanel"][data-enter="left"] { transform: translateX(-12px); }
+.ban-nav-panels > [role="tabpanel"][data-enter="right"] { transform: translateX(12px); }
+
+/* Status drop. A filled capsule in the top right corner of its positioned window: 24 x 24 at rest,
+   44 wide while thinking, and as wide as its message, growing leftward from the right edge.
+   Before the module runs, .ban-drop alone is already the resting capsule. It clips without being
+   scrollable (hidden is the fallback where clip is unknown). */
+.ban-drop {
+  position: absolute; right: 16px; top: 12px; width: 24px; height: 24px;
+  border-radius: 12px; overflow: hidden; overflow: clip;
+  background: var(--ban-cap); color: var(--ban-cap-ink); font-size: 12px;
+  transition: width var(--ban-t-slow) var(--ban-e-spring);
+}
+.ban-drop[data-state="thinking"] { width: 44px; }
+
+/* The lamp: centre 12 px from the left edge, so it rides the growing edge. */
+.ban-drop > .ban-lamp {
+  left: 10.5px; top: 10.5px;
+  transition: background-color var(--ban-t-fast), opacity var(--ban-t-fast);
+}
+.ban-drop[data-state="thinking"] > .ban-lamp { opacity: 0; }
+
+/* Three thinking dots in the 44 px capsule. */
+.ban-drop-dots {
+  position: absolute; left: 0; top: 0; width: 44px; height: 24px;
+  opacity: 0; transition: opacity var(--ban-t-fast);
+}
+.ban-drop[data-state="thinking"] > .ban-drop-dots { opacity: 1; }
+.ban-drop-dots > .ban-ln:nth-child(2) { animation-delay: .18s; }
+.ban-drop-dots > .ban-ln:nth-child(3) { animation-delay: .36s; }
+
+/* The text starts 24 px from the left and ends at the cross's 24 px box. */
+.ban-drop > button {
+  position: absolute; top: 0; height: 24px; margin: 0; padding: 0;
+  border: 0; border-radius: 12px; background: none; font: inherit; color: inherit; cursor: default;
+  opacity: 0; transition: opacity var(--ban-t-fast);
+}
+.ban-drop[data-state="message"] > button { opacity: 1; }
+.ban-drop:not([data-state="message"]) > button { pointer-events: none; }
+.ban-drop-text {
+  left: 24px; right: 24px; text-align: left; line-height: 24px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ban-drop-close { right: 0; width: 24px; }
+
+/* Read by assistive technology, not shown. */
+.ban-drop-live {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+
+/* Primitives for pages built by hand from the signs. They close banui.css, after the controls;
+   the library's own controls do not use them. */
+
+/* Secondary text. */
+.ban-muted { color: var(--ban-muted); }
+
+/* A capsule that has grown into a list or a tray keeps the control radius. */
+.ban-grown { border-radius: 14px; }
+
+/* Press: the control gives a little. */
+.ban-press { transition: transform var(--ban-t-press); }
+.ban-press:active { transform: scale(.97); }
+
+/* Unavailable control: outlined, muted label, never a lamp. */
+.ban-cap:disabled, .ban-cap[aria-disabled="true"] {
+  background: var(--ban-card); color: var(--ban-muted);
+  box-shadow: inset 0 0 0 1px var(--ban-line); cursor: default;
+}
+
+/* Recording wave: on .ban-ln lines with --k: .7, staggered with animation-delay. */
+.ban-wave { animation: ban-wave .5s ease-in-out infinite alternate; }
+@keyframes ban-wave { from { scale: 1 .35; } to { scale: 1 1; } }
+
+/* A bare input inside an outlined capsule shows focus by the capsule's own outline, not by the ring. */
+.ban .ban-out:has(> input:focus) { box-shadow: inset 0 0 0 1.5px var(--ban-text); }
+.ban .ban-out > input:focus-visible { outline: 0; }
+
+/* A pen mark for a record or a first time carries data-pen itself and shows without an error. */
+.ban-pen[data-pen] path { stroke-dashoffset: 0; }
+.ban-note[data-pen] { opacity: 1; transition-delay: .25s; }

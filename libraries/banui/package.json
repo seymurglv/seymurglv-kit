@@ -18,7 +18,7 @@
     "dev": "vite",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
-    "build": "tsc -p tsconfig.build.json && node scripts/build-css.mjs",
+    "build": "tsc -p tsconfig.build.json && node scripts/build-css.mjs && node scripts/sync-kit.mjs",
     "shots": "node scripts/shots.mjs"
   },
   "devDependencies": {
