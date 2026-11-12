@@ -1,6 +1,6 @@
 ---
 name: banui
-description: Use when designing, mocking up, prototyping, reviewing or fixing any UI, screen, control or state in the banui design language, or when someone mentions banui, the five signs (capsule, line, dot, lamp, pen stroke), "наш стиль", "пять знаков", капля, лампа. Also when a banui design drifts into generic UI - invented colors or sizes, red errors, spinners, modals, toasts, a meaning told by color alone.
+description: Use when designing, mocking up, prototyping, reviewing or fixing any UI, screen, control or state in the banui design language, or when someone mentions banui, the five signs (capsule, line, dot, lamp, pen stroke), "наш стиль", "пять знаков", капля, лампа. Also when someone wants to add finished banui work to the skill as a reference, or update or delete one ("добавь в референсы", "сохрани как пример", "обнови референс", "удали пример"), and when a banui design drifts into generic UI - invented colors or sizes, red errors, spinners, modals, toasts, a meaning told by color alone.
 ---
 
 # banui
@@ -9,13 +9,49 @@ A quiet interface where everything is built from five signs, and a state is a ne
 
 **The values below are fixed.** Agents who know only the idea of banui get its spirit right and its numbers wrong: 6 px dots, 8 px lamps with a halo, 1.5 px lines, a red error, an invented palette. Do not pick sizes, colors or timings: copy them.
 
-## Start here
+## Four modes
 
-1. Copy the `kit/` folder (next to this file) beside the page and link `kit/banui.css` unchanged. It holds every token, the sign primitives and the ready controls; `kit/index.js` builds the controls (`mount()`). A working screen to start from is `examples/screen-settings/`. Do not rename or re-pick its values.
-2. Build each control from the signs. The recipes and glyph offsets for the existing controls are in `references/controls.md`: read it before building a field, toggle, list, navigation, status drop or pen mark.
-3. Run the self-check at the end of this file before you show the work.
+The skill does one of four things. When the request does not say which, ask once, with these four options, before doing anything else.
+
+| Mode | The person says | What happens |
+|---|---|---|
+| **Create** | what they want: a screen, a control, a state | You build it new, by the rules below |
+| **Add a reference** | "save this", "добавь в референсы" | The finished work we made together is stored in the skill |
+| **Update a reference** | "обнови референс", or a stored one is out of date | The stored work is brought in line with the current one |
+| **Delete a reference** | "удали пример" | The stored work is taken out of the skill |
+
+A reference is finished work kept inside this skill for the next agent to copy: a screen is a folder in `examples/`, a control is a section in `references/controls.md`. `kit/` is not a reference: it is a copy of the built library, made by `npm run build`, and is never edited by hand.
 
 Talk to the owner in the language they write in. UI copy follows the product's language.
+
+### Create
+
+1. Copy the `kit/` folder (next to this file) beside the page and link `kit/banui.css` unchanged. It holds every token, the sign primitives and the ready controls; `kit/index.js` builds the controls (`mount()`). Do not rename or re-pick its values.
+2. Start from the closest reference: a screen in `examples/` (`examples/screen-settings/` is a working one), a control recipe in `references/controls.md`. Read the recipe before building a field, toggle, list, navigation, status drop or pen mark.
+3. What no reference covers, build from the signs: see "Inventing a control".
+4. Run the self-check at the end of this file before you show the work.
+
+### Add a reference
+
+Only work the owner has seen and accepted, and that passes the self-check.
+
+- **A screen**: a new folder `examples/<kind>-<name>/` (lowercase letters, digits and hyphens, like `screen-settings`) with its `index.html` and its own CSS and JS. It links the kit as `../../kit/banui.css` and holds no copy of it. Leave out everything that belongs to the product: real data, names, network calls.
+- **A control**: a new section in `references/controls.md` (states table, which signs carry them, glyph offsets) and its line in the Contents list there.
+- If a folder or section with that name exists, this is an update: say so and switch modes.
+
+### Update a reference
+
+1. Show the owner what will change in the stored reference before you write.
+2. Change only that reference. Rules, tokens and values in this file change only on the owner's decision, never as a side effect.
+3. If the change makes another reference or a line of this file untrue, name it and ask.
+
+### Delete a reference
+
+1. Name exactly what goes: the folder path, or the section title. Wait for the owner's yes.
+2. Move the folder to the Trash, do not erase it. Cut a section out of `references/controls.md` together with its Contents line.
+3. Search this file, `references/` and the other examples for mentions of it and fix or report each one. `examples/screen-settings/` is named in Create: if it goes, name another working screen there.
+
+After adding, updating or deleting, open every changed example in a browser and say what you checked.
 
 ## The five signs
 
