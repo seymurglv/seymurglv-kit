@@ -30,14 +30,13 @@ Open a folder to see what is inside.
 </details>
 
 <details>
-<summary><b>libraries/</b> &nbsp;·&nbsp; 1 library with its skill</summary>
+<summary><b>libraries/</b> &nbsp;·&nbsp; 1 library with a skill for agents</summary>
 
 <br>
 
 | Name | Claude Code | OpenCode | What it is |
 |---|---|---|---|
-| [`banui`](libraries/banui) | | | A UI design language as code: framework-free TypeScript and CSS, with a demo and its tests |
-| [`banui` skill](libraries/banui/skills/banui) | yes | yes | The same language for an agent: every control built from five signs (capsule, line, dot, lamp, pen stroke), with a lamp color map, starter styles and control recipes |
+| [`banui`](libraries/banui) | skill | skill | A UI design language where every control is built from five signs (capsule, line, dot, lamp, pen stroke). The library is framework-free TypeScript and CSS with a demo and its tests; the [skill for an agent](libraries/banui/skills/banui) inside it carries the lamp color map, starter styles and control recipes |
 
 </details>
 
