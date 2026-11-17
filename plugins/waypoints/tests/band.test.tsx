@@ -9,6 +9,7 @@ const BAND = {
   requestId: 'above-prompt',
   props: {
     hasSurvey: false,
+    isCollapsed: false,
     isWorking: false,
     maxRows: 20,
     bodyColumns: 80,
@@ -210,7 +211,15 @@ test('desktop: one highlight per row, the hint after the label, nothing overlaps
     expect(hint?.props?.display).toBe('none')
     expect(hint?.hover?.display).toBe('flex')
     expect(all(hint).some(e => e.type === 'Text')).toBe(true)
+    // It takes no room of its own: the label keeps its width.
+    expect(hint?.props?.width).toBe(0)
   }
+
+  // Under the pointer: the prompt a pick puts in the box, or, when the label
+  // is the whole prompt, what a pick does.
+  const shown = (n: string) => JSON.stringify(all(byKey(tree, `row-${n}`)).at(-1))
+  expect(shown('1')).toContain('into the prompt box')
+  expect(shown('2')).toContain('Прогони гейты на сцене-шаблоне, потом покажи результат')
 
   // Nothing is placed out of the flow or pulled over a neighbour.
   for (const e of all(tree)) {
@@ -243,7 +252,8 @@ test('terminal: rows read as a survey, no hover', async ($, on) => {
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
   const tree = await ui.drawn()
   expect(all(tree).filter(e => e.hover !== undefined)).toEqual([])
-  expect(await ui.findAll({ type: 'Button' })).toHaveLength(4)
+  // Three picks, other, hide.
+  expect(await ui.findAll({ type: 'Button' })).toHaveLength(5)
   await ui.unmount()
 })
 
@@ -437,4 +447,92 @@ test('/waypoints reports what the forks took', async ($, on) => {
     presentation: { isFullscreen: false, columns: 80 },
   })
   expect(JSON.stringify(result)).toContain('This session: 2 requests · 240k from cache')
+})
+
+test('while the fork is out the band holds one quiet line, on every surface', async ($, on) => {
+  const seen = engine(on, REPLY)
+  seen.forkMs = 3000
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  await $.turn.complete(answer('t1'))
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    expect(await ui.find({ type: 'Text', text: /Looking for next steps…/ })).toBeDefined()
+    expect(await ui.find({ type: 'Button', key: 'pick-1' })).toBeUndefined()
+    expect(await ui.find({ type: 'Button', key: 'other' })).toBeUndefined()
+    expect(await ui.find({ type: 'Button', key: 'hide' })).toBeDefined()
+    await ui.unmount()
+  }
+  await seen.advance(3000)
+  const ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  expect(await ui.find({ type: 'Text', text: /Looking for next steps…/ })).toBeUndefined()
+  expect(await ui.find({ type: 'Button', key: 'pick-1' })).toBeDefined()
+  await ui.unmount()
+})
+
+test('9 asks for other prompts and keeps the offer until they come, on every surface', async ($, on) => {
+  const seen = engine(on, REPLY)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  for (const surface of SURFACES) {
+    seen.reply = REPLY
+    seen.forkMs = 0
+    seen.forkPrompts = []
+    await $.turn.complete(answer(`other-${surface}`))
+    await seen.settle()
+    expect(seen.forkPrompts[0]).not.toContain('<already-offered>')
+
+    seen.reply = JSON.stringify([{ label: 'Обнови README', prompt: 'Обнови README' }])
+    seen.forkMs = 3000
+    let ui = await $.ui.mount({ ...BAND, surface })
+    expect((await ui.find({ type: 'Button', key: 'other' }))?.props.hotkey).toBe('9')
+    await ui.press({ key: 'other' })
+    await ui.unmount()
+
+    // The offer stays while the fork is out; the line says it is on its way.
+    ui = await $.ui.mount({ ...BAND, surface })
+    expect((await ui.find({ type: 'Button', key: labelKey(surface, '1') }))?.text).toContain('Закоммить и запушь')
+    expect(await ui.find({ type: 'Text', text: /Looking for next steps…/ })).toBeDefined()
+    expect(await ui.find({ type: 'Button', key: 'other' })).toBeUndefined()
+    await ui.unmount()
+
+    await seen.advance(3000)
+    expect(seen.forkPrompts[1]).toContain('<already-offered>\nЗакоммить и запушь\n')
+    ui = await $.ui.mount({ ...BAND, surface })
+    expect((await ui.find({ type: 'Button', key: labelKey(surface, '1') }))?.text).toContain('Обнови README')
+    expect(await ui.find({ type: 'Button', key: 'pick-2' })).toBeUndefined()
+
+    // Nothing new: the offer on screen stays.
+    seen.reply = '[]'
+    seen.forkMs = 0
+    await ui.press({ key: 'other' })
+    await seen.settle()
+    await ui.unmount()
+    ui = await $.ui.mount({ ...BAND, surface })
+    expect((await ui.find({ type: 'Button', key: labelKey(surface, '1') }))?.text).toContain('Обнови README')
+    await ui.unmount()
+  }
+})
+
+test('/waypoints show brings the last offer back', async ($, on) => {
+  const seen = engine(on, REPLY)
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  const show = () =>
+    $.command.run({
+      command: 'waypoints',
+      args: 'show',
+      origin: { kind: 'composer' },
+      presentation: { isFullscreen: false, columns: 80 },
+    })
+  expect(JSON.stringify(await show())).toContain('nothing to show yet')
+
+  await $.turn.complete(answer('t1'))
+  await seen.settle()
+  await $.turn.start({ text: 'next', turnId: 't2' })
+  await show()
+
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    expect((await ui.find({ type: 'Button', key: labelKey(surface, '2') }))?.text).toContain('Прогони гейты')
+    await ui.unmount()
+  }
+  expect(seen.forks).toBe(1)
 })

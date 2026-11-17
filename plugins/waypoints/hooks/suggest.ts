@@ -67,7 +67,8 @@ export function commandList(commands: readonly CommandInfo[], own: string): stri
   return described.join('\n')
 }
 
-export function forkPrompt(commands: string): string {
+// `seen` holds the labels of an offer the person asked to replace.
+export function forkPrompt(commands: string, seen: readonly string[] = []): string {
   const parts = [
     'Pause the task: do not continue it and do not call tools. Guess what the user will most ' +
       `likely type next, as up to ${MAX_ITEMS} prompts written the way the user writes to you: ` +
@@ -75,8 +76,19 @@ export function forkPrompt(commands: string): string {
       'concrete to this conversation (name the file, test, branch or follow-up they would ' +
       'actually mention). Put the most likely one first. Prefer the obvious next step (run what ' +
       'was just built, commit, fix what you flagged, do the same elsewhere) over generic advice. ' +
+      'Make the prompts different moves, never one move worded three ways: where they fit, one ' +
+      'that carries the work on, one that checks it (run it, test it, review it) and one that ' +
+      'closes it (commit, push, hand over). If your last message asked the user a question or ' +
+      'offered a choice, the prompts are the answers they would most likely give, each a ' +
+      'different answer. ' +
       'When the work is finished or nothing useful fits, return an empty list.',
   ]
+  if (seen.length > 0) {
+    parts.push(
+      'The user has already seen the prompts below and asked for other ones: offer different ' +
+        `steps, none of these again.\n\n<already-offered>\n${seen.join('\n')}\n</already-offered>`,
+    )
+  }
   if (commands !== '') {
     parts.push(
       'The user has the skills and slash commands listed below installed and wants them used. ' +

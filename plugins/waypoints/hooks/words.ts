@@ -14,6 +14,12 @@ export type Words = {
   keysDesktop: string
   /** The dismiss control's label, after its `0`. */
   hide: string
+  /** The control that asks for other suggestions, after its `9`. */
+  other: string
+  /** The one line shown while the suggestions are on their way. */
+  loading: string
+  /** `/waypoints show` with no offer kept. */
+  nothingToShow: string
   /** A toast when the prompt box would not take the draft. */
   notFilled: string
   /** The /waypoints command's description. */
@@ -39,8 +45,11 @@ const WORDS: Record<Language, Words> = {
     keys: '1–3 вставить · Tab первую',
     keysDesktop: '1–3 вставить',
     hide: 'скрыть',
+    other: 'другие',
+    loading: 'Подбираю следующие шаги…',
+    nothingToShow: 'waypoints: показать пока нечего',
     notFilled: 'waypoints: поле ввода не приняло подсказку',
-    command: 'Сколько запросов сделал waypoints и сколько токенов они взяли',
+    command: 'Запросы и токены waypoints; `show` возвращает последние подсказки',
     tally: (s, all) =>
       [
         `Этот чат: ${s.forks} запросов · ${line(s, 'из кэша', 'в кэш', 'новых', 'ответ')}`,
@@ -52,8 +61,11 @@ const WORDS: Record<Language, Words> = {
     keys: '1–3 insert · Tab takes the first',
     keysDesktop: '1–3 insert',
     hide: 'hide',
+    other: 'other',
+    loading: 'Looking for next steps…',
+    nothingToShow: 'waypoints: nothing to show yet',
     notFilled: 'waypoints: the prompt box did not take the suggestion',
-    command: 'How many requests waypoints made and the tokens they took',
+    command: 'Requests and tokens waypoints took; `show` brings the last suggestions back',
     tally: (s, all) =>
       [
         `This session: ${s.forks} requests · ${line(s, 'from cache', 'to cache', 'new', 'out')}`,

@@ -1,6 +1,6 @@
 {
   "name": "waypoints",
-  "description": "After each turn, up to three likely next prompts as quiet rows above the prompt box. 1-3 put one in as a draft you edit, Tab takes the first, 0 hides them. Nothing is ever sent for you.",
+  "description": "After each turn, up to three likely next prompts as quiet rows above the prompt box. 1-3 put one in as a draft you edit, Tab takes the first, 9 asks for other ones, 0 hides them. Nothing is ever sent for you.",
   "author": {
     "name": "seymurglv"
   },

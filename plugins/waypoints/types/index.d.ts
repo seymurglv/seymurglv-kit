@@ -12,7 +12,8 @@ export type WaypointsSuggestion = {
 
 export type WaypointsView =
   | { kind: 'hidden' }
-  | { kind: 'loading'; turnId: string }
+  /** `previous`: the offer being replaced, shown again if nothing new comes. */
+  | { kind: 'loading'; turnId: string; previous?: WaypointsSuggestion[] }
   | { kind: 'offer'; turnId: string; items: WaypointsSuggestion[] }
 
 /** What the forks have cost, in tokens, as the API counts them. */
@@ -28,6 +29,8 @@ declare module 'claude-code' {
   interface PluginState {
     waypoints: {
       view: Shaped<WaypointsView>
+      /** The latest offer, kept after its rows hide, for `/waypoints show`. */
+      last: Shaped<WaypointsSuggestion[]>
       tally: Shaped<WaypointsTally>
     }
   }

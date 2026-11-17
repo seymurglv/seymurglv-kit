@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { LABEL_MAX, commandList, parseReply, skillTag, visible } from '../hooks/suggest'
+import { LABEL_MAX, commandList, forkPrompt, parseReply, skillTag, visible } from '../hooks/suggest'
 
 test('visible drops what a person cannot see', () => {
   expect(visible('\x1b[31mred\x1b[0m text', 100)).toBe('red text')
@@ -60,4 +60,14 @@ test('commandList leaves out the engine, ours and odd names', () => {
     'waypoints',
   )
   expect(list).toBe('/end: Close the session')
+})
+
+test('forkPrompt asks for different moves, and for other ones after an offer', () => {
+  const first = forkPrompt('')
+  expect(first).toContain('different moves')
+  expect(first).toContain('asked the user a question')
+  expect(first).not.toContain('<already-offered>')
+  expect(forkPrompt('', ['Commit and push', 'Run the tests'])).toContain(
+    '<already-offered>\nCommit and push\nRun the tests\n</already-offered>',
+  )
 })
