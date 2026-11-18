@@ -1,41 +1,76 @@
 # banui
 
-Тихий интерфейс, в котором каждый контрол собран из пяти знаков: капсулы, линии, точки, лампы и штриха ручки. Состояние не рисуется заново, а ставит те же линии в новое положение: точка вытягивается в линию, линии складываются в галочку, капсула едет к выбранному разделу. Библиотека без зависимостей: один файл стилей и модули на TypeScript, которые достраивают знаки к обычной разметке.
+A quiet interface where every control is built from five signs: capsule, line, dot, lamp and pen stroke. A state is not drawn anew, it puts the same lines in a new position: a dot stretches into a line, lines fold into a check, a capsule travels to the chosen section.
+
+Two things live in this folder:
+
+- **The library**: one stylesheet and TypeScript modules with no dependencies, which build the signs onto plain markup.
+- **The skill**: the rules of the language for a coding agent, with the built library, a ready settings screen and control recipes.
 
 <p>
-  <img src="assets/settings-light.png" alt="Окно настроек в светлой теме: навигация, поля «Имя» и «Почта», список «Язык», два переключателя" width="49%">
-  <img src="assets/settings-dark.png" alt="То же окно настроек в тёмной теме" width="49%">
+  <img src="assets/settings-light.png" alt="Settings window in the light theme: navigation, two text fields, a language list and two toggles (the sample UI is in Russian)" width="49%">
+  <img src="assets/settings-dark.png" alt="The same settings window in the dark theme" width="49%">
 </p>
 
-## Пять знаков
+## Contents
 
-| Знак | Что значит | Геометрия |
+- [The five signs](#the-five-signs)
+- [Lamp map](#lamp-map)
+- [Install](#install)
+- [Use the library on a page](#use-the-library-on-a-page)
+- [Controls](#controls)
+- [Themes](#themes)
+- [Motion](#motion)
+- [The skill](#the-skill)
+- [Commands](#commands)
+- [Layout](#layout)
+
+## The five signs
+
+| Sign | Means | Geometry |
 |---|---|---|
-| Капсула | контейнер и то, что выбрано | радиус равен половине высоты |
-| Линия | включено, идёт действие | скруглённый штрих толщиной 2 px |
-| Точка | покой, выключено | круг 3 px |
-| Лампа | сигнал | та же точка 3 px, только зажжённая; один цвет на один смысл |
-| Штрих ручки | «посмотри сюда» | рукописная линия 1,75 px цвета ручки |
+| Capsule | a container, and what is selected | radius equals half its height |
+| Line | on, an action is running | a rounded stroke 2 px thick |
+| Dot | rest, off | a 3 px circle |
+| Lamp | a signal | the same 3 px dot, lit; one color for one meaning |
+| Pen stroke | "look here" | a handwritten line 1.75 px thick, in the pen color |
 
-Залитая капсула значит «включено» или «выбрано», обведённая значит «выключено» или «не выбрано». Точка и линия — один элемент `.ban-ln`, поэтому одна перетекает в другую.
+A filled capsule means "on" or "selected", an outlined one means "off" or "not selected". Dot and line are one element, `.ban-ln`, so one flows into the other.
 
-## Карта ламп
+## Lamp map
 
-| Смысл | `data-kind` | На залитой капсуле | На карточке | Что стоит рядом с цветом |
+| Meaning | `data-kind` | On a filled capsule | On a card | What stands next to the color |
 |---|---|---|---|---|
-| Готово | `done` | `#33C27A` | `#0B6B5B` | галочка |
-| Ошибка | `error` | `#F5B82E` | `#BD7313` | штрих ручки под неверным и слова, что не так |
-| Запись | `rec` | `#FF5A2E` | `#9E1708` | волна линий |
-| Внимание | `attention` | `#5C8DFF` | `#2F6BFF` | лампа дышит, пока на неё не посмотрят |
+| Done | `done` | `#33C27A` | `#0B6B5B` | a check |
+| Error | `error` | `#F5B82E` | `#BD7313` | a pen stroke under what is wrong, and words that say why |
+| Recording | `rec` | `#FF5A2E` | `#9E1708` | a wave of lines |
+| Attention | `attention` | `#5C8DFF` | `#2F6BFF` | the lamp breathes until it is looked at |
 
-Значения для светлой темы; в тёмной два столбца меняются местами. Цвет никогда не говорит один, рядом всегда знак или слова. Ошибка янтарная, потому что красный значит запись.
+The values are for the light theme; in the dark theme the two columns swap. Color never speaks alone: a sign or words always stand next to it. Error is amber because red means recording.
 
-## Как подключить
+## Install
 
-1. Соберите библиотеку (`npm run build`) и скопируйте всю папку `dist/` рядом со страницей, например под именем `banui/`. Копируется папка целиком: `index.js` подключает соседние модули, а `banui.css` берёт шрифты из `fonts/`.
-2. Подключите `banui/banui.css` и оберните страницу в `.ban`.
-3. Напишите по одному элементу на контрол с классом `ban-*`. До запуска скрипта он уже имеет свой размер, знаки достраиваются без сдвига вёрстки.
-4. Вызовите `mount()` из `banui/index.js`: он достроит все контролы на странице. Повторный вызов ничего не удваивает.
+The skill, as a Claude Code plugin:
+
+```
+/plugin marketplace add seymurglv/seymurglv-kit
+/plugin install banui@seymurglv
+```
+
+The skill alone, for any agent that reads skills:
+
+```sh
+npx skills add seymurglv/seymurglv-kit --skill banui
+```
+
+The library is not published to npm: build it here (`npm install`, then `npm run build`) and copy `dist/`, as the next section describes.
+
+## Use the library on a page
+
+1. Build the library (`npm run build`) and copy the whole `dist/` folder next to the page, for example as `banui/`. Copy the folder as a whole: `index.js` imports its neighbours, and `banui.css` takes its fonts from `fonts/`.
+2. Link `banui/banui.css` and wrap the page in `.ban`.
+3. Write one element per control with its `ban-*` class. It has its size before the script runs, so the signs are built without a layout shift.
+4. Call `mount()` from `banui/index.js`: it builds every control on the page. A second call doubles nothing.
 
 ```html
 <link rel="stylesheet" href="banui/banui.css">
@@ -43,9 +78,9 @@
   .win { position: relative; max-width: 480px; padding: 48px 16px 16px; }
   .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 8px 0; }
   .row > label { line-height: 28px; }
-  /* Ширина задаётся родителю: поле и список занимают его целиком. */
+  /* The width is given to the parent: a field and a list fill it. */
   .control { flex: none; width: 220px; }
-  /* Поле с ошибкой оставляет под собой место для пометки. */
+  /* A field with an error keeps room under itself for the note. */
   .row:has(.ban-field-box[data-state="error"]) { padding-bottom: 29px; }
 </style>
 
@@ -53,20 +88,20 @@
   <div class="win">
     <div class="ban-drop"></div>
     <div class="row">
-      <label for="mail">Почта</label>
-      <div class="control"><input class="ban-field" id="mail" value="anna@mail.ru"></div>
+      <label for="mail">Mail</label>
+      <div class="control"><input class="ban-field" id="mail" value="anna@example.com"></div>
     </div>
     <div class="row">
-      <label for="lang">Язык</label>
+      <label for="lang">Language</label>
       <div class="control">
         <select class="ban-select" id="lang">
-          <option value="ru">Русский</option>
           <option value="en">English</option>
+          <option value="ru">Русский</option>
         </select>
       </div>
     </div>
     <div class="row">
-      <label for="updates">Проверять обновления</label>
+      <label for="updates">Check for updates</label>
       <button class="ban-toggle" id="updates" type="button" role="switch" aria-checked="true"></button>
     </div>
   </div>
@@ -76,98 +111,100 @@
   import { mount, field, drop } from './banui/index.js'
 
   mount()
-  // Повторный вызов с настройками даёт уже достроенному полю проверку.
+  // A second call with options gives the field that is already built its check.
   field(document.querySelector('#mail'), {
     confirm: true,
-    validate: value => (value.includes('@') ? null : 'нужна @'),
+    validate: value => (value.includes('@') ? null : 'needs @'),
   })
 
   const status = drop(document.querySelector('.ban-drop'))
   document.querySelector('#lang').addEventListener('ban:change', () => {
-    status.show('attention', 'Сменится после перезапуска')
+    status.show('attention', 'Changes after a restart')
   })
 </script>
 ```
 
-Пометка ошибки рисуется под полем и места в вёрстке не занимает: пока поле в ошибке, страница оставляет под ним около 21 px (в окне настроек строка с полем растёт с 45 до 66 px). Поле и список достраиваются в `.ban-field-box` и `.ban-select-box`, блочные и во всю ширину родителя, поэтому ширину задают родителю, а не самому `<input>` или `<select>`.
+The error note is drawn under the field and takes no room in the layout: while the field is in error, the page keeps about 21 px under it (in the settings window the row with the field grows from 45 to 66 px). A field and a list are built into `.ban-field-box` and `.ban-select-box`, block-level and as wide as the parent, so the width is given to the parent, not to the `<input>` or `<select>` itself.
 
-Каждая функция возвращает контроллер; повторный вызов на том же элементе возвращает тот же контроллер, а `destroy()` убирает всё, что функция достроила; после `destroy()` старый контроллер больше ничего не меняет. События — `CustomEvent`, всплывают и сообщают о том, что сделал человек. Присваивание из кода (`checked`, `value`, `index`) меняет состояние молча. Исключения: `show()`, `think()` и `rest()` капли и `check()` поля сообщают `ban:change` и при вызове из кода.
+Every function returns a controller; a second call on the same element returns the same controller, and `destroy()` takes away everything the function built; after `destroy()` the old controller changes nothing. Events are `CustomEvent`s, they bubble and report what the person did. An assignment from code (`checked`, `value`, `index`) changes the state silently. The exceptions: the drop's `show()`, `think()` and `rest()` and the field's `check()` report `ban:change` when called from code too.
 
-## Контролы
+## Controls
 
-| Класс | Что написать | Функция | Что сообщает |
+| Class | What to write | Function | What it reports |
 |---|---|---|---|
 | `ban-toggle` | `<button role="switch" aria-checked="false">` | `toggle(el)`: `checked` | `ban:change`, `detail.checked` |
-| `ban-field` | `<input>` | `field(input, { validate, confirm })`: `state`, `box`, `check()`, `setError()` | `ban:change` после проверки (уход фокуса, Enter), только когда значение или состояние изменилось: `detail.value`, `detail.state` |
-| `ban-select` | `<select>` с `<option>` и `aria-label` или `<label>` | `select(el)`: `value`, `open`, `show()`, `hide()` | `change` и `ban:change`: `detail.value`, `detail.label` |
-| `ban-nav` | `<div role="tablist">` с `<button role="tab" aria-controls="…">`; разделы `role="tabpanel"` в общем родителе, невыбранные с `hidden` | `nav(el)`: `index`, `select(i)` | `ban:change`: `detail.index`, `detail.id` |
-| `ban-drop` | пустой `<div>` в окне с `position: relative`; имя крестика в `data-close-label`, по умолчанию «Закрыть» | `drop(el)`: `state`, `show(kind, text)`, `think()`, `rest()` | `ban:change` при смене состояния (`detail.state`), `ban:open` по нажатию на текст, `ban:close` по крестику |
-| `ban-button` | `<button class="ban-button" tabindex="0">` | не нужна, только стили; `mount()` ставит `tabindex="0"` сам, без `mount()` напишите его | обычный `click` |
+| `ban-field` | `<input>` | `field(input, { validate, confirm })`: `state`, `box`, `check()`, `setError()` | `ban:change` after a check (focus leaves, Enter), only when the value or the state changed: `detail.value`, `detail.state` |
+| `ban-select` | `<select>` with `<option>`s and an `aria-label` or a `<label>` | `select(el)`: `value`, `open`, `show()`, `hide()` | `change` and `ban:change`: `detail.value`, `detail.label` |
+| `ban-nav` | `<div role="tablist">` with `<button role="tab" aria-controls="…">`; the sections are `role="tabpanel"` in a shared parent, the unselected ones `hidden` | `nav(el)`: `index`, `select(i)` | `ban:change`: `detail.index`, `detail.id` |
+| `ban-drop` | an empty `<div>` in a window with `position: relative`; the name of the cross in `data-close-label`, "Закрыть" by default | `drop(el)`: `state`, `show(kind, text)`, `think()`, `rest()` | `ban:change` when the state changes (`detail.state`), `ban:open` on a press on the text, `ban:close` on the cross |
+| `ban-button` | `<button class="ban-button" tabindex="0">` | none needed, styles only; `mount()` sets `tabindex="0"` itself, without `mount()` write it | a plain `click` |
 
-`validate` получает значение и возвращает `null` или короткую причину; причина появляется рукописной пометкой под полем. `confirm: true` ставит галочку и лампу «готово» верному значению. `field()` можно вызвать и после `mount()`: вызов с настройками заменяет `validate` и `confirm` у того же контроллера, вызов без настроек ничего не меняет. `toggle()` ставит `role="switch"` и `aria-checked="false"` кнопке, у которой их нет.
+`validate` takes the value and returns `null` or a short reason; the reason appears as a hand note under the field. `confirm: true` gives a valid value a check and the "done" lamp. `field()` can be called after `mount()` too: a call with options replaces `validate` and `confirm` on the same controller, a call without options changes nothing. `toggle()` sets `role="switch"` and `aria-checked="false"` on a button that lacks them.
 
-Список рассчитан на короткие перечни: он раскрывается на все строки сразу, без прокрутки. Варианты читаются один раз, когда контрол строится. Отключённый `<select>` не открывается, отключённые `<option>` нельзя выбрать, стрелки их пропускают. Нажатие на его `<label>` ставит фокус на кнопку значения и список не раскрывает; сброс формы возвращает подпись.
+The list is made for short sets: it opens to all its rows at once, with no scrolling. The options are read once, when the control is built. A disabled `<select>` does not open, disabled `<option>`s cannot be chosen, and the arrow keys skip them. A press on its `<label>` moves focus to the value button and does not open the list; a form reset brings the label back.
 
-Капля показывает одно сообщение за раз и не закрывается сама; когда окно сужается, сообщение подстраивается под новую ширину.
+The status drop shows one message at a time and does not close by itself; when the window narrows, the message fits the new width.
 
-Ещё модуль отдаёт `morphLabel(el, text)` (подпись меняется по общим буквам), `followHeight(box, change)` (высота следует за содержимым) и `textWidth(el, text)` (ширина текста в шрифте элемента; элемент должен быть в документе и со стилями).
+The module also gives `morphLabel(el, text)` (a label changes by its shared letters), `followHeight(box, change)` (a height follows its content) and `textWidth(el, text)` (the width of a text in the element's font; the element has to be in the document, with its styles).
 
-## Темы
+## Themes
 
-`data-theme="light"` или `data-theme="dark"` на любом предке задаёт тему его поддерева; элемент с `data-theme` внутри `.ban` получает свой фон и цвет текста. Без атрибута тема следует системной. Смена темы после достройки подхватывается сразу.
+`data-theme="light"` or `data-theme="dark"` on any ancestor sets the theme of its subtree; an element with `data-theme` inside `.ban` gets its own background and text color. Without the attribute the theme follows the system. A theme change after the controls are built is picked up at once.
 
-## Движение
+## Motion
 
-Ничто не движется без причины: только нажатие или пришедшие данные; сами по себе дышат лишь лампа «внимание» и три точки «думаю».
+Nothing moves without a cause: only a press or data that arrived. Only the "attention" lamp and the three "thinking" dots breathe by themselves.
 
-При `prefers-reduced-motion: reduce` переходы и дыхание выключены, подписи меняются сразу, а состояния меняются как обычно.
+With `prefers-reduced-motion: reduce` transitions and breathing are off and labels change at once; states change as usual.
 
-## Скилл
+## The skill
 
-Вместе с библиотекой лежит скилл для агента, [`skills/banui/SKILL.md`](skills/banui/SKILL.md): правила языка, собранная библиотека и референсы. У него четыре режима. Если из просьбы неясно, какой нужен, агент один раз спрашивает.
+Next to the library lies a skill for an agent, [`skills/banui/SKILL.md`](skills/banui/SKILL.md): the rules of the language, the built library and the references. It has four modes. When a request does not say which one is meant, the agent asks once.
 
-| Режим | Что вы говорите | Что делает агент |
+| Mode | What you say | What the agent does |
 |---|---|---|
-| Создать | описываете, что нужно: экран, контрол, состояние | строит новое по правилам языка, начиная с ближайшего референса |
-| Добавить референс | «добавь в референсы», «сохрани как пример» | кладёт в скилл готовую работу, которую вы приняли |
-| Обновить референс | «обнови референс» | показывает, что изменится, и правит только этот референс |
-| Удалить референс | «удали пример» | называет, что уходит, ждёт вашего «да» и переносит папку в Корзину |
+| Create | what you need: a screen, a control, a state | builds it new by the rules of the language, starting from the closest reference |
+| Add a reference | "add this to the references", "save this as an example" | stores finished work you have accepted in the skill |
+| Update a reference | "update the reference" | shows what will change and edits only that reference |
+| Delete a reference | "delete the example" | names what goes, waits for your yes and moves the folder to the Trash |
 
-Референс — готовая работа, которую следующий агент берёт за основу. Экран хранится папкой в `skills/banui/examples/`, контрол — разделом в `skills/banui/references/controls.md`. Папка `kit/` референсом не считается: её пишет `npm run build`.
+A reference is finished work the next agent starts from. A screen is kept as a folder in `skills/banui/examples/`, a control as a section in `skills/banui/references/controls.md`. The `kit/` folder is not a reference: `npm run build` writes it.
 
-Правила языка, токены и значения при работе с референсами не меняются: это отдельное решение владельца.
+The rules of the language, its tokens and its values do not change while references are worked on: that is a separate decision of the owner.
 
-## Команды
+## Commands
 
 ```sh
-npm run dev        # http://127.0.0.1:5179: образцы знаков /demo/specimen.html, пример /skills/banui/examples/screen-settings/index.html
-npm run test:unit  # модульные проверки
-npm run test:e2e   # проверки в браузерах
-npm run build      # dist/ и её точная копия в skills/banui/kit/: модули, объявления типов, banui.css и шрифты
-npm run shots      # снимки окна настроек в assets/
+npm run dev        # http://127.0.0.1:5179: sign samples at /demo/specimen.html, the example at /skills/banui/examples/screen-settings/index.html
+npm run test:unit  # unit checks
+npm run test:e2e   # checks in browsers
+npm run build      # dist/ and its exact copy in skills/banui/kit/: modules, type declarations, banui.css and fonts
+npm run shots      # screenshots of the settings window into assets/
 ```
 
-## Устройство
+## Layout
 
 ```
+.claude-plugin/      the plugin manifest for Claude Code
 src/
-  tokens.css         цвета, шрифты, время
-  signs.css          корень .ban, капсула, линия-точка, лампа, фокус
-  pen/               штрих ручки и рукописная пометка
+  tokens.css         colors, fonts, timings
+  signs.css          the .ban root, capsule, line and dot, lamp, focus
+  pen/               pen stroke and hand note
   controls/          toggle, field, select, nav, drop, button
-  primitives.css     примитивы для страниц, собранных из знаков вручную
-  fonts/             Caveat 600 и его лицензия
-  motion.ts          смена подписи, высота, ширина текста
-  index.ts           вход и mount()
-  banui.css          собирает всё вместе
-demo/                образцы знаков
-tests/               модульные и браузерные проверки
-scripts/             сборка стилей, копия сборки в kit/ и снимки
-skills/banui/        правила языка для агента
-  kit/               собранная библиотека, копия dist/; её пишет build
-  examples/          готовые примеры; папка примера вместе с kit/ копируется как есть
-  references/        рецепты контролов и глифов
-assets/              снимки для этого файла
+  primitives.css     primitives for pages put together from the signs by hand
+  fonts/             Caveat 600 and its license
+  motion.ts          label change, height, text width
+  index.ts           the entry and mount()
+  banui.css          brings it all together
+demo/                sign samples
+showcase/            a page that shows the examples side by side
+tests/               unit and browser checks
+scripts/             the stylesheet build, the copy of the build into kit/, and screenshots
+skills/banui/        the rules of the language for an agent
+  kit/               the built library, a copy of dist/; build writes it
+  examples/          finished examples; an example's folder is copied as it is, together with kit/
+  references/        recipes for controls and glyphs
+assets/              screenshots for this file
 ```
 
-Пока нет: флажка, счётчика, ползунка, кнопки состояния, поиска, лотка и остальных пометок ручки.
+Not here yet: a checkbox, a stepper, a slider, a status button, search, a tray and the other pen marks.

@@ -1,0 +1,8 @@
+{
+  "name": "banui",
+  "description": "The banui design language as a skill: every control built from five signs (capsule, line, dot, lamp, pen stroke), with the lamp color map, the built library, a ready settings screen and control recipes.",
+  "author": {
+    "name": "seymurglv"
+  },
+  "keywords": ["design-language", "ui", "css", "typescript", "skill"]
+}

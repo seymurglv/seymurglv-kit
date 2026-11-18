@@ -1,6 +1,6 @@
 ---
 name: banui
-description: Use when designing, mocking up, prototyping, reviewing or fixing any UI, screen, control or state in the banui design language, or when someone mentions banui, the five signs (capsule, line, dot, lamp, pen stroke), "наш стиль", "пять знаков", капля, лампа. Also when someone wants to add finished banui work to the skill as a reference, or update or delete one ("добавь в референсы", "сохрани как пример", "обнови референс", "удали пример"), and when a banui design drifts into generic UI - invented colors or sizes, red errors, spinners, modals, toasts, a meaning told by color alone.
+description: Use when designing, mocking up, prototyping, reviewing or fixing any UI, screen, control or state in the banui design language, or when someone mentions banui, "our style", its five signs (capsule, line, dot, lamp, pen stroke), the status drop or the lamp. Also when someone wants to add finished banui work to the skill as a reference, or update or delete one ("add this to the references", "save this as an example", "update the reference", "delete the example"), and when a banui design drifts into generic UI - invented colors or sizes, red errors, spinners, modals, toasts, a meaning told by color alone.
 ---
 
 # banui
@@ -16,9 +16,9 @@ The skill does one of four things. When the request does not say which, ask once
 | Mode | The person says | What happens |
 |---|---|---|
 | **Create** | what they want: a screen, a control, a state | You build it new, by the rules below |
-| **Add a reference** | "save this", "добавь в референсы" | The finished work we made together is stored in the skill |
-| **Update a reference** | "обнови референс", or a stored one is out of date | The stored work is brought in line with the current one |
-| **Delete a reference** | "удали пример" | The stored work is taken out of the skill |
+| **Add a reference** | "save this", "add this to the references" | The finished work we made together is stored in the skill |
+| **Update a reference** | "update the reference", or a stored one is out of date | The stored work is brought in line with the current one |
+| **Delete a reference** | "delete the example" | The stored work is taken out of the skill |
 
 A reference is finished work kept inside this skill for the next agent to copy: a screen is a folder in `examples/`, a control is a section in `references/controls.md`. `kit/` is not a reference: it is a copy of the built library, made by `npm run build`, and is never edited by hand.
 

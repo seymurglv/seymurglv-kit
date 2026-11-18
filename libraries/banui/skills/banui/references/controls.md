@@ -75,7 +75,7 @@ Outlined capsule, 28 px high. Sign slot at the left (center 14 px from the edge)
 - An error stays, even while the field is focused, until the person edits the text. Then the lamp goes back to the typing line.
 - Unavailable field: outline `line`, text `muted`, rest dot.
 - The pen stroke goes under the wrong part when it is known, otherwise under the whole typed text. It draws from its start (400 ms). Its wave is fixed for a given text, not random on every show. A path that works for width `w`: `M1 5 C{w*.25} 2 {w*.5} 8 {w*.72} 4 S{w-5} 6 {w-1} 3` in an 8 px high `svg.ban-pen` placed 20 px below the field's top, with `pathLength="1"` on the path.
-- The hand note says what is wrong in two or three words ("нужна @"). The row grows from 44 to 66 px (300 ms spring) to make room.
+- The hand note says what is wrong in two or three words ("needs @"). The row grows from 44 to 66 px (300 ms spring) to make room.
 - The outline and the text never change color on error.
 - `aria-invalid`, and `aria-describedby` pointing at the note (`role="status"`).
 - An input never has zero width at the moment it takes focus. If its container is still opening, give the input its full width at once and let the container clip it.
@@ -151,7 +151,7 @@ A tray is how banui asks, confirms or collects a little input. It is the pressed
 - As wide as the row's control column (220 px), or the whole row when the sentence needs it. Other controls in that row fade out while it is open. Text 13 px, buttons quiet.
 - One thought per tray: a sentence, at most one field, two buttons.
 - A trigger with no glyph simply becomes the tray; a trigger with a glyph turns it into a cross.
-- Confirmation of a destructive action: the safe choice ("Оставить") takes focus and is listed first; the destructive one is a quiet button like any other, told apart by its words.
+- Confirmation of a destructive action: the safe choice ("Keep") takes focus and is listed first; the destructive one is a quiet button like any other, told apart by its words.
 - Esc and the safe choice fold it back into the button and return focus there. A click outside does nothing.
 - Classes from `banui.css`: `ban-grown` for the radius, `ban-clip` while it grows so rings inside are drawn inward, `ban-ring` on the safe choice so its focus shows after a mouse press.
 - When the confirmed action removes its row, the row collapses (300 ms) and the control itself has said it: the drop stays silent.
@@ -161,7 +161,7 @@ A tray is how banui asks, confirms or collects a little input. It is the pressed
 - Unknown duration: three breathing dots where the result will appear.
 - Known progress: the same three dots plus a number in text ("42 %"). No bar, no ring.
 - The result replaces the dots in place: a check and words, or the error state. A long result (a paragraph) simply appears where the dots were.
-- Where the dots go: where the result will appear. If a field owns the result, in the field's right slot, and the action's button offers the way out ("Отменить"). If nothing but the button owns it and it cannot be cancelled, in the button in place of its label.
+- Where the dots go: where the result will appear. If a field owns the result, in the field's right slot, and the action's button offers the way out ("Cancel"). If nothing but the button owns it and it cannot be cancelled, in the button in place of its label.
 - A finished state stays (address and check) until the person edits or acts again.
 
 ## Pen layer
