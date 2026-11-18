@@ -24,6 +24,8 @@ Plugins:
 claude plugin marketplace add seymurglv/seymurglv-kit
 claude plugin install agent-desktop@seymurglv
 claude plugin install banui@seymurglv
+claude plugin install modern-web-guidance@seymurglv
+claude plugin install taste-skill@seymurglv
 claude plugin install waypoints@seymurglv
 ```
 
@@ -36,6 +38,14 @@ macOS and Windows. On Linux install the guard, skip `trash.py --check`, and tell
 delete has no Trash route there yet.
 
 `agent-desktop` needs its CLI once per machine: `npm install -g agent-desktop@latest`, then `agent-desktop status`.
+
+`modern-web-guidance` is not kept in this repository either: the marketplace entry points at Google Chrome's
+repository, so an install or update takes the current version from there. Its skill runs
+`npx -y modern-web-guidance@latest`, which needs Node and network access.
+
+`taste-skill` is not kept here either: the marketplace entry points at Leonxlnx's repository. Its scripts need
+Node 22+ and Chrome, Edge or Chromium (`CHROME_PATH` if it is somewhere unusual; ffmpeg is optional); check them
+and say what is missing. Its skill adds a `Stop` hook that runs its finish gate in projects where it built a page.
 
 The person restarts Claude Code; plugins load in a new session.
 
@@ -53,10 +63,19 @@ and Linux, copy it on Windows:
 | `libraries/banui/skills/banui` | `banui` |
 | `skills/agent-desktop` of the original repository (see below) | `agent-desktop` |
 | `skills/agent-desktop-<macos or windows>` of the original repository (this system only) | the same name |
+| `skills/taste-skill` of the original repository (see below) | `design-taste-frontend` |
 
 `agent-desktop` is not kept in this repository. Clone the original next to the global `opencode.json`,
 `git clone https://github.com/vercel-labs/agent-desktop ~/.config/opencode/vendor/agent-desktop`, check out its
 latest release tag, and link or copy the skills from there.
+
+`modern-web-guidance` is not kept here either. Install it with its own installer, which also keeps it updated:
+`npx -y modern-web-guidance@latest install`.
+
+`taste-skill` is not kept here either. Clone it the same way,
+`git clone https://github.com/Leonxlnx/taste-skill ~/.config/opencode/vendor/taste-skill`, and link or copy its
+`skills/taste-skill` folder. Its `Stop` hook is Claude Code only; in OpenCode the finish gate runs only when the
+skill calls it.
 
 A link points into a clone, so the clone has to stay where it is; if it moves, link again. The
 `agent-desktop` skills need their CLI here too: `npm install -g agent-desktop@latest`, then `agent-desktop status`.

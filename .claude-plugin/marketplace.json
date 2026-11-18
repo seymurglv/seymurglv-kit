@@ -31,6 +31,30 @@
       ]
     },
     {
+      "name": "modern-web-guidance",
+      "source": {
+        "source": "github",
+        "repo": "GoogleChrome/modern-web-guidance"
+      },
+      "description": "Current web platform practice for HTML, CSS and client-side JS, taken straight from Google Chrome's modern-web-guidance repository: the skill searches and retrieves its guides before web code is written.",
+      "strict": false,
+      "skills": [
+        "./skills/modern-web-guidance"
+      ]
+    },
+    {
+      "name": "taste-skill",
+      "source": {
+        "source": "github",
+        "repo": "Leonxlnx/taste-skill"
+      },
+      "description": "Art direction for websites, taken straight from Leonxlnx's taste-skill repository: real photographs and icons, one section per screen, and a checker and finish gate that test the page in headless Chrome.",
+      "strict": false,
+      "skills": [
+        "./skills/taste-skill"
+      ]
+    },
+    {
       "name": "waypoints",
       "source": "./plugins/waypoints",
       "description": "Up to three likely next prompts as quiet rows above the prompt box after each turn."

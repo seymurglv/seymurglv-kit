@@ -17,13 +17,15 @@ seymurglv-kit
 Open a folder to see what is inside.
 
 <details>
-<summary><b>plugins/</b> &nbsp;·&nbsp; 1 plugin of my own, 1 from its original repository</summary>
+<summary><b>plugins/</b> &nbsp;·&nbsp; 1 plugin of my own, 3 from their original repositories</summary>
 
 <br>
 
 | Plugin | Claude Code | OpenCode | What it is |
 |---|---|---|---|
 | [`agent-desktop`](https://github.com/vercel-labs/agent-desktop) | yes | skills | Not kept here: installed from Vercel Labs' own repository. Desktop control through the OS accessibility tree: snapshot an app, act on a ref, re-read to verify. Guides for macOS and Windows |
+| [`modern-web-guidance`](https://github.com/GoogleChrome/modern-web-guidance) | yes | skills | Not kept here: installed from Google Chrome's own repository. Before web code is written, the skill searches and retrieves current guides for HTML, CSS and client-side JS; needs Node for `npx` |
+| [`taste-skill`](https://github.com/Leonxlnx/taste-skill) | yes | skill | Not kept here: installed from Leonxlnx's own repository. Art direction for websites and landing pages: real photographs and icons, one section per screen, a checker and finish gate in headless Chrome; needs Node 22+ and Chrome |
 | [`waypoints`](plugins/waypoints) | yes | no | Up to three likely next prompts as quiet rows above the prompt box after each turn |
 
 </details>
@@ -68,6 +70,8 @@ there, and checks the result.
 /plugin marketplace add seymurglv/seymurglv-kit
 /plugin install agent-desktop@seymurglv
 /plugin install banui@seymurglv
+/plugin install modern-web-guidance@seymurglv
+/plugin install taste-skill@seymurglv
 /plugin install waypoints@seymurglv
 ```
 
