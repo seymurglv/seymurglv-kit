@@ -24,7 +24,6 @@ Plugins:
 claude plugin marketplace add seymurglv/seymurglv-kit
 claude plugin install agent-desktop@seymurglv
 claude plugin install banui@seymurglv
-claude plugin install ember@seymurglv
 claude plugin install waypoints@seymurglv
 ```
 
@@ -42,8 +41,8 @@ The person restarts Claude Code; plugins load in a new session.
 
 ## 3. OpenCode
 
-OpenCode reads skills, not Claude Code plugins. `ember` and `waypoints` draw in Claude Code's interface and are
-skipped here; say so.
+OpenCode reads skills, not Claude Code plugins. `waypoints` draws in Claude Code's interface and is skipped here;
+say so.
 
 Skills go into the global skills folder, next to the global `opencode.json`: `~/.config/opencode/skills/`
 (on Windows look for `opencode.json` under `%USERPROFILE%\.config\opencode` first). Link each folder on macOS
@@ -54,7 +53,6 @@ and Linux, copy it on Windows:
 | `libraries/banui/skills/banui` | `banui` |
 | `skills/agent-desktop` of the original repository (see below) | `agent-desktop` |
 | `skills/agent-desktop-<macos, windows or linux>` of the original repository (this system only) | the same name |
-| `plugins/ember/skills/handoff` | `handoff` |
 
 `agent-desktop` is not kept in this repository. Clone the original next to the global `opencode.json`,
 `git clone https://github.com/vercel-labs/agent-desktop ~/.config/opencode/vendor/agent-desktop`, check out its

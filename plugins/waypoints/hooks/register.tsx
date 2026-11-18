@@ -23,10 +23,8 @@ const TALLY_KEY = 'tally-1'
 // its badge's centre 19 px in; a label Button's text starts 10 px in, so
 // 54 px into the row. The key line beneath starts there too, after a spacer:
 // Desktop drops an Svg whose `alt` is blank, so the spacer names itself.
-// The grid is the band's own and needs no other plugin. Under ember's row it
-// also meets ember's: a row with no left padding starts 6 px left of ember's
-// ring (its row pads `xs`), so the badge sits 4 px left of the ring's centre
-// and the label 2 px right of ember's text line (measured live, 2 Nov 2026).
+// The grid is the band's own and needs no other plugin (measured live,
+// 2 Nov 2026).
 const LABEL_PX = 54
 const SPACER = `<svg xmlns="http://www.w3.org/2000/svg" width="${LABEL_PX}" height="1"/>`
 const SPACER_ALT = 'spacer'

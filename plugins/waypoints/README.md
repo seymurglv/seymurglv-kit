@@ -2,11 +2,9 @@
 
 After each turn, up to three likely next prompts show as quiet rows above the prompt box.
 
-Claude Desktop, under ember's row, the pointer on row 1:
+Claude Desktop, the pointer on row 1:
 
 ```
- (59)   Warm · goes cold at 00:52
-        421k tokens in cache
 ░░[1]░░░Commit and push░░into the prompt box░░░░░
   [2]   Find why the test fails   systematic-debugging
   [3]   Review the branch         code-review
@@ -36,7 +34,7 @@ Suggestions come in the language of the conversation. The band's own words (the 
 
 The look is quiet: no bordered or accent buttons, the label, and under the pointer a muted note of what a pick does. In the terminal the rows read as a survey's do, `1: label`.
 
-On Claude Desktop the grid is the band's own and needs no other plugin: a key column, then the labels, the key line starting on the labels' line. Under ember's row it also meets ember's grid. Desktop draws a Button's hotkey as its own small key badge, so each row holds two plain Buttons: one with the hotkey alone, in a column as wide as ember's ring, and one with the label, starting on ember's text line. The whole row lights under the pointer, once: both Buttons clear Desktop's own hover fill (`hover: { backgroundColor: '#0000' }`, which the app applies with `!important` over its `:hover`). Rows are padded so the app's 28 px button never reaches past its row, and the key line has air above it. Measured live on Claude Desktop 4.4212 (comfortable density, 2 Nov 2026): the key badge sits 4 px left of the ring's centre and the label 2 px right of ember's text, the closest a native button allows; the key line starts on the labels' line through a 54 px spacer (`LABEL_PX` in `register.tsx`). A Desktop that sizes buttons differently shifts both.
+On Claude Desktop the grid is the band's own and needs no other plugin: a key column, then the labels, the key line starting on the labels' line. Desktop draws a Button's hotkey as its own small key badge, so each row holds two plain Buttons: one with the hotkey alone, 44 px wide, and one with the label. The whole row lights under the pointer, once: both Buttons clear Desktop's own hover fill (`hover: { backgroundColor: '#0000' }`, which the app applies with `!important` over its `:hover`). Rows are padded so the app's 28 px button never reaches past its row, and the key line has air above it. Measured live on Claude Desktop 4.4212 (comfortable density, 2 Nov 2026): the key badge's centre sits 19 px into the row and the label's text starts 54 px in; the key line starts on the labels' line through a 54 px spacer (`LABEL_PX` in `register.tsx`). A Desktop that sizes buttons differently shifts both.
 
 ## How it works
 
