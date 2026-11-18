@@ -10,16 +10,16 @@
     {
       "name": "agent-desktop",
       "source": {
-        "source": "url",
-        "url": "https://github.com/vercel-labs/agent-desktop.git"
+        "source": "git-subdir",
+        "url": "https://github.com/vercel-labs/agent-desktop.git",
+        "path": "skills"
       },
-      "description": "Computer use through the OS accessibility tree, taken straight from Vercel Labs' agent-desktop repository: the core skill plus the macOS, Windows and Linux guides.",
+      "description": "Computer use through the OS accessibility tree, taken straight from Vercel Labs' agent-desktop repository: the core skill plus the macOS and Windows guides.",
       "strict": false,
       "skills": [
-        "./skills/agent-desktop",
-        "./skills/agent-desktop-macos",
-        "./skills/agent-desktop-windows",
-        "./skills/agent-desktop-linux"
+        "./agent-desktop",
+        "./agent-desktop-macos",
+        "./agent-desktop-windows"
       ]
     },
     {

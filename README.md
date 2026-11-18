@@ -23,7 +23,7 @@ Open a folder to see what is inside.
 
 | Plugin | Claude Code | OpenCode | What it is |
 |---|---|---|---|
-| [`agent-desktop`](https://github.com/vercel-labs/agent-desktop) | yes | skills | Not kept here: installed from Vercel Labs' own repository. Desktop control through the OS accessibility tree: snapshot an app, act on a ref, re-read to verify. Guides for macOS, Windows and Linux |
+| [`agent-desktop`](https://github.com/vercel-labs/agent-desktop) | yes | skills | Not kept here: installed from Vercel Labs' own repository. Desktop control through the OS accessibility tree: snapshot an app, act on a ref, re-read to verify. Guides for macOS and Windows |
 | [`waypoints`](plugins/waypoints) | yes | no | Up to three likely next prompts as quiet rows above the prompt box after each turn |
 
 </details>

@@ -52,7 +52,7 @@ and Linux, copy it on Windows:
 |---|---|
 | `libraries/banui/skills/banui` | `banui` |
 | `skills/agent-desktop` of the original repository (see below) | `agent-desktop` |
-| `skills/agent-desktop-<macos, windows or linux>` of the original repository (this system only) | the same name |
+| `skills/agent-desktop-<macos or windows>` of the original repository (this system only) | the same name |
 
 `agent-desktop` is not kept in this repository. Clone the original next to the global `opencode.json`,
 `git clone https://github.com/vercel-labs/agent-desktop ~/.config/opencode/vendor/agent-desktop`, check out its
