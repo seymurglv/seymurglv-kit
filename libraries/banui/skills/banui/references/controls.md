@@ -11,6 +11,7 @@ Recipes for the controls that exist. All use the tokens and primitives from `../
 - Dropdown list
 - Navigation
 - Buttons
+- Answer button
 - Tray
 - Progress
 - Pen layer
@@ -38,6 +39,8 @@ Every glyph is two or three `.ban-ln` elements in one `position:relative` box. V
 Rest dots take the ink of their container: `text` in a field, `muted` inside a toggle that is off.
 
 A glyph changes by moving its lines: three dots become a cross (outer dots travel to the center and rotate, the third fades), a chevron flips, a dot stretches into a line. Never swap one drawing for another.
+
+A check that appears is drawn stroke by stroke. Its two lines start as dots; the short one takes its place first and the long one 100 ms later (`transition-delay:.1s` on the long line), each by the line's own 300 ms spring. Three waiting dots become a check the same way: two travel into the strokes, the third fades.
 
 ## Status drop
 
@@ -118,8 +121,27 @@ A track: capsule 28 px high, `card` with a 1 px `line` outline, 3 px padding. Bu
 | Unavailable | outlined with a `line` outline and `muted` text (`:disabled` in `banui.css`); a sign in it collapses into a dot |
 
 - At most one main action in a window. Everything else is quiet.
-- Press: shrinks to 0.97 (120 ms). Hover: nothing changes but the cursor.
+- Press: shrinks to 0.97 (120 ms) and comes back with the spring (260 ms). Hover: nothing changes but the cursor.
 - A button that waits shows three breathing dots in place of its label and keeps its width; the dots become a check, then the new label.
+
+## Answer button
+
+A card that asks one thing (a suggestion, a request, an invitation) carries its two answers as buttons: the main one filled, the other quiet. The pressed button itself shows the answer through, and then the card leaves. Made of a capsule, dots and lines.
+
+| Step | Pressed button | Other button | Card |
+|---|---|---|---|
+| Rest | its label | its label | full height |
+| Sent | three breathing dots in place of the label; width fixed at what it was | steps back to 0.35 opacity (160 ms), takes no presses | takes no second answer |
+| Done | the dots become a check, drawn stroke by stroke | stays back | any count of such cards on the page changes now |
+| Gone, 480 ms after the check | | | `ban-fold`: height to 0 in 320 ms, fading in 180 ms; the cards below move up |
+| Failed | the label returns, width released | returns | stays, and says what went wrong in words with an error lamp |
+
+- Both answers take the same path, "no" included: the person sees that either was heard.
+- To fold a card: set its height in px to what it measures, read it back once so the browser takes it, then set `data-gone` and height 0. `ban-fold` on the card carries the timing.
+- The page is rebuilt once, after the fold. When several cards were answered in a row, after the last of them.
+- A number that moves because of the answer (a share, a count in another panel) travels to its new value; a bar slides from its old width.
+- When the last card has gone, the words that say nothing is left arrive in its place (fade and 6 px rise, 400 ms ease-out). The heading changes its words then, not only its number.
+- With reduced motion the steps still happen in order: dots, check, the card is gone.
 
 ## Tray
 

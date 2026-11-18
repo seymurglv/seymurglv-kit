@@ -7,9 +7,17 @@
 /* A capsule that has grown into a list or a tray keeps the control radius. */
 .ban-grown { border-radius: 14px; }
 
-/* Press: the control gives a little. */
-.ban-press { transition: transform var(--ban-t-press); }
-.ban-press:active { transform: scale(.97); }
+/* Press: the control gives a little at once and comes back with the spring. */
+.ban-press { transition: transform var(--ban-t-back) var(--ban-e-spring); }
+.ban-press:active { transform: scale(.97); transition: transform var(--ban-t-press); }
+
+/* Folding away: a card or a row that has been answered. The script fixes its height in px, then
+   sets data-gone and height 0, and what follows moves up. Leaving is quicker than arriving. */
+.ban-fold {
+  transition: height var(--ban-t-fold) var(--ban-e-fold), padding var(--ban-t-fold) var(--ban-e-fold),
+    opacity var(--ban-t-leave) ease-in;
+}
+.ban-fold[data-gone] { overflow: hidden; padding-top: 0; padding-bottom: 0; opacity: 0; }
 
 /* Unavailable control: outlined, muted label, never a lamp. */
 .ban-cap:disabled, .ban-cap[aria-disabled="true"] {

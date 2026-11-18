@@ -78,7 +78,11 @@
   --ban-hand: "Caveat", "Ink Free", "Segoe Print", cursive;
   --ban-e-out: cubic-bezier(.22, 1, .36, 1);
   --ban-e-spring: cubic-bezier(.3, 1.25, .5, 1);
+  --ban-e-fold: cubic-bezier(.32, .72, 0, 1);
   --ban-t-press: .12s;
+  --ban-t-back: .26s;
+  --ban-t-fold: .32s;
+  --ban-t-leave: .18s;
   --ban-t-fast: .2s;
   --ban-t-mid: .3s;
   --ban-t-slow: .42s;

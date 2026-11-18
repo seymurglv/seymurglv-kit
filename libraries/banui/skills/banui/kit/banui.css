@@ -78,7 +78,11 @@
   --ban-hand: "Caveat", "Ink Free", "Segoe Print", cursive;
   --ban-e-out: cubic-bezier(.22, 1, .36, 1);
   --ban-e-spring: cubic-bezier(.3, 1.25, .5, 1);
+  --ban-e-fold: cubic-bezier(.32, .72, 0, 1);
   --ban-t-press: .12s;
+  --ban-t-back: .26s;
+  --ban-t-fold: .32s;
+  --ban-t-leave: .18s;
   --ban-t-fast: .2s;
   --ban-t-mid: .3s;
   --ban-t-slow: .42s;
@@ -218,9 +222,9 @@
   height: 24px; padding: 0 10px; border: 0; border-radius: 12px;
   font-size: 12px; background: var(--ban-card);
   box-shadow: inset 0 0 0 1px var(--ban-muted);
-  transition: transform var(--ban-t-press);
+  transition: transform var(--ban-t-back) var(--ban-e-spring);
 }
-.ban-button:active { transform: scale(.97); }
+.ban-button:active { transform: scale(.97); transition: transform var(--ban-t-press); }
 
 /* Text field: a 28 px outlined capsule. The bare input already has the shape; the module wraps it
    in .ban-field-box, which then carries the outline, the sign at the left, the check mark at the
@@ -426,9 +430,17 @@
 /* A capsule that has grown into a list or a tray keeps the control radius. */
 .ban-grown { border-radius: 14px; }
 
-/* Press: the control gives a little. */
-.ban-press { transition: transform var(--ban-t-press); }
-.ban-press:active { transform: scale(.97); }
+/* Press: the control gives a little at once and comes back with the spring. */
+.ban-press { transition: transform var(--ban-t-back) var(--ban-e-spring); }
+.ban-press:active { transform: scale(.97); transition: transform var(--ban-t-press); }
+
+/* Folding away: a card or a row that has been answered. The script fixes its height in px, then
+   sets data-gone and height 0, and what follows moves up. Leaving is quicker than arriving. */
+.ban-fold {
+  transition: height var(--ban-t-fold) var(--ban-e-fold), padding var(--ban-t-fold) var(--ban-e-fold),
+    opacity var(--ban-t-leave) ease-in;
+}
+.ban-fold[data-gone] { overflow: hidden; padding-top: 0; padding-bottom: 0; opacity: 0; }
 
 /* Unavailable control: outlined, muted label, never a lamp. */
 .ban-cap:disabled, .ban-cap[aria-disabled="true"] {

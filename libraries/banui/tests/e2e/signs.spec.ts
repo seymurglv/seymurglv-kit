@@ -8,6 +8,26 @@ test('точка 3×3, линия 2×14, лампа 3×3', async ({ page }) => {
   expect(await size(page.locator('#lamp-cap'))).toEqual([3, 3])
   expect(await css(page.locator('#s-signs .dot'), 'border-top-left-radius')).not.toBe('0px')
 })
+test('кнопка возвращается пружиной за 260 мс, карточка складывается и гаснет', async ({ page }) => {
+  await page.goto('/demo/specimen.html')
+  const made = await page.locator('.ban').first().evaluate(async root => {
+    const button = document.createElement('button'); button.className = 'ban-button'; button.textContent = 'Да'
+    const card = document.createElement('div'); card.className = 'ban-fold'; card.innerHTML = '<div style="height:40px">Карточка</div>'
+    root.append(button, card)
+    const back = getComputedStyle(button).transitionDuration
+    const before = card.offsetHeight
+    card.style.height = `${before}px`; void card.offsetHeight
+    card.dataset.gone = ''; card.style.height = '0px'
+    await new Promise(done => setTimeout(done, 450))
+    const cs = getComputedStyle(card)
+    return { back, before, after: card.offsetHeight, opacity: cs.opacity, fold: cs.transitionDuration }
+  })
+  expect(made.back).toBe('0.26s')
+  expect(made.before).toBeGreaterThan(20)
+  expect(made.after).toBe(0)
+  expect(made.opacity).toBe('0')
+  expect(made.fold).toBe('0.32s, 0.32s, 0.18s')
+})
 test('тон лампы зависит от поверхности и темы', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' }); await page.goto('/demo/specimen.html')
   expect(await css(page.locator('#lamp-cap'), 'background-color')).toBe('rgb(245, 184, 46)')   // #F5B82E

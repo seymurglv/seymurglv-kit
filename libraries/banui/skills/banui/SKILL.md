@@ -109,9 +109,12 @@ Two text sizes and the hand note. Hierarchy comes from weight (600 for a title) 
 | What moves | Time | Curve |
 |---|---|---|
 | Press (button shrinks to 0.97) | 120 ms | default |
+| Release after a press (back to full size) | 260 ms | spring |
 | Toggle | 200 ms | spring |
 | Navigation capsule, list height, field signs, row growing | 300 ms | spring |
 | Height of a window or panel | 300 ms | ease-out, no overshoot |
+| A card or row folding away after its answer (`ban-fold`) | 320 ms | fold (`--ban-e-fold`): quick off the mark, no overshoot |
+| Leaving: what goes fades out | 180 ms | ease-in |
 | Status drop width | 420 ms | spring |
 | Label change by shared letters | 16 ms per letter | |
 | Pen stroke drawing | 400 ms | ease-out |
@@ -123,6 +126,9 @@ Two text sizes and the hand note. Hierarchy comes from weight (600 for a title) 
 - Waiting is three breathing dots that become the result in place. Nothing rotates.
 - A row or a control that grows uses the spring. The window around it has no transition of its own then: it simply follows. Ease-out without overshoot is for a window changing section.
 - A label that changes by shared letters sits in a button whose width is fixed for the longest label.
+- Leaving is quicker than arriving. What goes fades in 180 ms while its height folds; what arrives takes its 300 to 420 ms.
+- A press goes down at once (120 ms) and comes back with the spring (260 ms). `ban-press` and `ban-button` do both.
+- What did not move is not redrawn. Motion is a CSS transition wherever one can carry it. A view drawn by script draws only when something changed: every frame while it is dragged or travelling, at most 20 times a second for a slow drift at rest, not at all when still. After an answer the view is rebuilt once, when the last motion has ended.
 - `prefers-reduced-motion: reduce` turns transitions and breathing off and makes label changes instant; states still change.
 
 ## What banui never has

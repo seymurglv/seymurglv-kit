@@ -29,5 +29,5 @@ test('kit в навыке совпадает со сборкой', () => {
 test('в навыке один файл стилей, примитивы живут в библиотеке', () => {
   expect(existsSync('skills/banui/banui.css')).toBe(false)
   const css = readFileSync('skills/banui/kit/banui.css', 'utf8')
-  for (const rule of ['.ban-muted', '.ban-grown', '.ban-press', '.ban-wave', '.ban-pen[data-pen]']) expect(css).toContain(rule)
+  for (const rule of ['.ban-muted', '.ban-grown', '.ban-press', '.ban-fold[data-gone]', '.ban-wave', '.ban-pen[data-pen]']) expect(css).toContain(rule)
 })
