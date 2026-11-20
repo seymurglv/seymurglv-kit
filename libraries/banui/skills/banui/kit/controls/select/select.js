@@ -41,7 +41,7 @@ export function select(el) {
     arrow.className = 'ban-select-arrow';
     arrow.setAttribute('aria-hidden', 'true');
     arrow.append(sign(doc, 'ban-select-arrow-l'), sign(doc, 'ban-select-arrow-r'));
-    button.append(label, arrow);
+    button.append(sign(doc, 'ban-select-sign'), label, arrow);
     const list = doc.createElement('div');
     list.className = 'ban-select-list';
     list.id = listId;

@@ -1,4 +1,4 @@
-/* Status drop. A filled capsule in the top right corner of its positioned window: 24 x 24 at rest,
+/* Status drop. A capsule in the top right corner of its positioned window: 24 x 24 at rest,
    44 wide while thinking, and as wide as its message, growing leftward from the right edge.
    Before the module runs, .ban-drop alone is already the resting capsule. It clips without being
    scrollable (hidden is the fallback where clip is unknown). */
@@ -6,7 +6,12 @@
   position: absolute; right: 16px; top: 12px; width: 24px; height: 24px;
   border-radius: 12px; overflow: hidden; overflow: clip;
   background: var(--ban-cap); color: var(--ban-cap-ink); font-size: 12px;
-  transition: width var(--ban-t-slow) var(--ban-e-spring);
+  transition: width var(--ban-t-slow) var(--ban-e-spring),
+    background-color var(--ban-t-fast), color var(--ban-t-fast), box-shadow var(--ban-t-fast);
+}
+/* Resting and thinking it is outlined; it fills only when it has a message to say. */
+.ban-drop:not([data-state="message"]) {
+  background: var(--ban-card); color: var(--ban-text); box-shadow: inset 0 0 0 1px var(--ban-muted);
 }
 .ban-drop[data-state="thinking"] { width: 44px; }
 

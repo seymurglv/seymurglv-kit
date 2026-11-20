@@ -44,7 +44,7 @@ Talk to the owner in the language they write in. UI copy follows the product's l
 - A control is made only of these signs, text and numbers. No icons from a set, no boxes with shadows, no new shapes.
 - A dot and a line are one element: the line collapses into the dot and stretches back (`.ban-ln`). A check, a cross and a chevron are two lines in new positions. "Thinking" is three dots.
 - The lamp is the rest dot that lit up. Its size never changes, it has no halo, no ring and no hollow state: only its color changes.
-- Filled capsule (`cap` with `cap-ink`) = on or selected. Outlined capsule (`card` with a 1 px `muted` outline) = off or not selected.
+- Filled capsule (`cap` with `cap-ink`) = on or selected. Outlined capsule (`card` with a 1 px `muted` outline) = off or not selected, and every input. A quiet button is a capsule tinted `surface2` with no outline.
 
 ## Lamp map
 

@@ -201,15 +201,15 @@
 
 /* Toggle: a 36 x 20 capsule with one line-dot sign.
    On = filled, a 2 x 10 line at the right; off (anything but aria-checked="true") =
-   outlined, a 3 x 3 dot at the left. */
+   outlined, a 3 x 3 dot in text ink at the left. */
 .ban-toggle {
   position: relative; width: 36px; height: 20px; padding: 0; border: 0; border-radius: 10px;
   background: var(--ban-cap); color: var(--ban-cap-ink);
   transition: background-color var(--ban-t-fast), color var(--ban-t-fast), box-shadow var(--ban-t-fast);
 }
 .ban-toggle:not([aria-checked="true"]) {
-  background: var(--ban-card); color: var(--ban-muted);
-  box-shadow: inset 0 0 0 1.5px var(--ban-muted);
+  background: var(--ban-card); color: var(--ban-text);
+  box-shadow: inset 0 0 0 1px var(--ban-muted);
 }
 .ban-toggle > .ban-ln {
   --b: 10; --x: -8px;
@@ -217,17 +217,17 @@
 }
 .ban-toggle[aria-checked="true"] > .ban-ln { --k: 1; --x: 8px; }
 
-/* Quiet button: a 24 px outlined capsule that gives a little under the press. */
+/* Quiet button: a 24 px capsule tinted with surface2, no outline (an outline marks an input),
+   that gives a little under the press. */
 .ban-button {
   height: 24px; padding: 0 10px; border: 0; border-radius: 12px;
-  font-size: 12px; background: var(--ban-card);
-  box-shadow: inset 0 0 0 1px var(--ban-muted);
+  font-size: 12px; background: var(--ban-surface2);
   transition: transform var(--ban-t-back) var(--ban-e-spring);
 }
 .ban-button:active { transform: scale(.97); transition: transform var(--ban-t-press); }
-/* Unavailable: a line outline and a muted label. */
+/* Unavailable: no tint, a line outline and a muted label. */
 .ban-button:disabled, .ban-button[aria-disabled="true"] {
-  color: var(--ban-muted); box-shadow: inset 0 0 0 1px var(--ban-line); cursor: default;
+  background: var(--ban-card); color: var(--ban-muted); box-shadow: inset 0 0 0 1px var(--ban-line); cursor: default;
 }
 
 /* Text field: a 28 px outlined capsule. The bare input already has the shape; the module wraps it
@@ -283,12 +283,12 @@
 .ban-field-box > .ban-pen { position: absolute; left: 26px; top: 20px; }
 .ban-field-box > .ban-note { position: absolute; left: 27px; top: 31px; }
 
-/* Dropdown list. The bare select is already a 28 px outlined capsule. The module puts it, hidden,
+/* Dropdown list. The bare select is already a 28 px outlined capsule, its value from 26 px like a field's text. The module puts it, hidden,
    in .ban-select-box, which keeps the 28 px in the layout; .ban-select-pop grows downward from it
    into the list, over the content below. Open height: 28 + 26 per row + 4. */
 .ban-select {
   appearance: none; -webkit-appearance: none;
-  display: block; width: 100%; height: 28px; margin: 0; padding: 0 28px 0 12px;
+  display: block; width: 100%; height: 28px; margin: 0; padding: 0 28px 0 26px;
   border: 0; border-radius: 14px; background: var(--ban-card); color: var(--ban-text);
   box-shadow: inset 0 0 0 1px var(--ban-muted); font: inherit;
 }
@@ -312,24 +312,29 @@
   transition: height var(--ban-t-mid) var(--ban-e-spring), box-shadow var(--ban-t-mid);
 }
 
-/* Value: the label from 12 px, the arrow in a 20 px box 4 px from the right edge. */
+/* Value: a rest dot centered 14 px from the left edge, as in a field; the label from 26 px;
+   the arrow in a 20 px box 4 px from the right edge. */
 .ban-select-value {
-  position: relative; display: block; width: 100%; height: 28px; margin: 0; padding: 0 28px 0 12px;
+  position: relative; display: block; width: 100%; height: 28px; margin: 0; padding: 0 28px 0 26px;
   border: 0; border-radius: 14px; background: none; text-align: left; cursor: default;
 }
 .ban-select-label { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.ban-select-arrow { position: absolute; right: 4px; top: 4px; width: 20px; height: 20px; }
+.ban-select-sign { left: 14px; pointer-events: none; }
+/* The chevron turns as a whole when the list opens, so its lines never stand side by side. */
+.ban-select-arrow {
+  position: absolute; right: 4px; top: 4px; width: 20px; height: 20px;
+  transition: transform var(--ban-t-mid) var(--ban-e-spring);
+}
+.ban-select-box[data-open="true"] .ban-select-arrow { transform: rotate(180deg); }
 .ban-select-arrow-l { --x: -2.2px; --r: -45deg; --k: .34; }
 .ban-select-arrow-r { --x: 2.2px; --r: 45deg; --k: .34; }
-.ban-select-box[data-open="true"] .ban-select-arrow-l { --r: 45deg; }
-.ban-select-box[data-open="true"] .ban-select-arrow-r { --r: -45deg; }
 
 /* Disabled: the outline in the line tone, the label and the arrow in muted ink. */
 .ban-select-box[data-disabled] > .ban-select-pop { box-shadow: inset 0 0 0 1px var(--ban-line); }
 .ban-select-value:disabled { color: var(--ban-muted); }
 
-/* Rows: 26 px, 4 px in from the sides, text from 20 px; the selected one in text ink with a line
-   centered 10 px from the edge. The row under the pointer gets the second surface; the row under
+/* Rows: 26 px, 4 px in from the sides, text from 26 px like the value; the selected one in text ink
+   with a line centered 14 px from the edge, under the value's dot. The row under the pointer gets the second surface; the row under
    the keys gets the ring drawn inward. */
 .ban-select-list {
   padding: 0 4px; visibility: hidden;
@@ -338,7 +343,7 @@
 .ban .ban-select-list:is(:focus, :focus-visible) { outline: none; }
 .ban-select-box[data-open="true"] .ban-select-list { visibility: visible; transition: none; }
 .ban-select-row {
-  position: relative; height: 26px; padding: 0 8px 0 16px; border-radius: 7px;
+  position: relative; height: 26px; padding: 0 8px 0 22px; border-radius: 7px;
   line-height: 26px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   color: var(--ban-muted); cursor: default;
 }
@@ -346,7 +351,7 @@
 .ban-select-list[data-keys] > .ban-select-row[data-active] { outline: 2px solid var(--ban-text); outline-offset: -3px; }
 .ban-select-row[aria-selected="true"] { color: var(--ban-text); }
 .ban-select-row[aria-disabled="true"] { color: var(--ban-muted); opacity: .5; }
-.ban-select-mark { left: 6px; --k: .6; opacity: 0; }
+.ban-select-mark { left: 10px; --k: .6; opacity: 0; }
 .ban-select-row[aria-selected="true"] > .ban-select-mark { opacity: 1; }
 
 /* Section navigation. A 28 px track with a 1 px line drawn inward and 3 px padding; 22 px tabs.
@@ -391,7 +396,7 @@
 .ban-nav-panels > [role="tabpanel"][data-enter="left"] { transform: translateX(-12px); }
 .ban-nav-panels > [role="tabpanel"][data-enter="right"] { transform: translateX(12px); }
 
-/* Status drop. A filled capsule in the top right corner of its positioned window: 24 x 24 at rest,
+/* Status drop. A capsule in the top right corner of its positioned window: 24 x 24 at rest,
    44 wide while thinking, and as wide as its message, growing leftward from the right edge.
    Before the module runs, .ban-drop alone is already the resting capsule. It clips without being
    scrollable (hidden is the fallback where clip is unknown). */
@@ -399,7 +404,12 @@
   position: absolute; right: 16px; top: 12px; width: 24px; height: 24px;
   border-radius: 12px; overflow: hidden; overflow: clip;
   background: var(--ban-cap); color: var(--ban-cap-ink); font-size: 12px;
-  transition: width var(--ban-t-slow) var(--ban-e-spring);
+  transition: width var(--ban-t-slow) var(--ban-e-spring),
+    background-color var(--ban-t-fast), color var(--ban-t-fast), box-shadow var(--ban-t-fast);
+}
+/* Resting and thinking it is outlined; it fills only when it has a message to say. */
+.ban-drop:not([data-state="message"]) {
+  background: var(--ban-card); color: var(--ban-text); box-shadow: inset 0 0 0 1px var(--ban-muted);
 }
 .ban-drop[data-state="thinking"] { width: 44px; }
 

@@ -14,7 +14,7 @@ The values every branch uses. They are fixed: copy them, do not pick your own. C
 |---|---|
 | `bg` | the page, and a window on it |
 | `card` | a raised surface; the inside of an outlined capsule |
-| `surface2` | hover of a list row; a plate under a specimen |
+| `surface2` | hover of a list row; the fill of a quiet button; a plate under a specimen |
 | `text` | text, and the ink of signs |
 | `muted` | secondary text; the outline of a control |
 | `faint` | decoration only, never text |
@@ -43,7 +43,7 @@ The values every branch uses. They are fixed: copy them, do not pick your own. C
 | Reading text (a paragraph) | 13 px with line height 1.5 |
 | Page behind a window | `bg`; the window is `bg` with a 1 px `line` border |
 | Hand note | Caveat 600, 17 px, rotated −3° |
-| Hairlines | 1 px `line`; control outline 1 px `muted` (1.5 px on a toggle that is off), 1.5 px `text` when a field is focused |
+| Hairlines | 1 px `line`; control outline 1 px `muted`, 1.5 px `text` when a field is focused |
 
 Two text sizes and the hand note. Hierarchy comes from weight (600 for a title) and space, never from a third size. System UI font; no web font for the interface.
 

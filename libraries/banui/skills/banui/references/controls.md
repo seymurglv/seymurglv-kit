@@ -30,7 +30,7 @@ Every glyph is two or three `.ban-ln` elements in one `position:relative` box. V
 | Check, in a 36 px control | `--x:-3px;--y:1.5px;--r:-45deg;--k:.4` and `--x:2.4px;--r:45deg;--k:.75` |
 | Cross (close, clear) | `--r:45deg;--k:.5` and `--r:-45deg;--k:.5` |
 | Chevron down | `--x:-2.2px;--r:-45deg;--k:.34` and `--x:2.2px;--r:45deg;--k:.34` |
-| Chevron up (open) | the same two lines with the rotations swapped |
+| Chevron up (open) | the same box turned 180° as a whole, so the two lines never stand side by side |
 | Plus | `--k:.7` and `--r:90deg;--k:.7`; rotate the box 45° for a cross |
 | Minus | `--r:90deg;--k:.7`; disabled: it collapses into a dot |
 | Three dots (thinking, more) | three dots at `--x:-7px`, `0`, `7px`; thinking adds `.ban-breathe` with delays 0, .18s, .36s |
@@ -38,7 +38,7 @@ Every glyph is two or three `.ban-ln` elements in one `position:relative` box. V
 
 Rest dots take the ink of their container: `text` in a field, `muted` inside a toggle that is off.
 
-A glyph changes by moving its lines: three dots become a cross (outer dots travel to the center and rotate, the third fades), a chevron flips, a dot stretches into a line. Never swap one drawing for another.
+A glyph changes by moving its lines: three dots become a cross (outer dots travel to the center and rotate, the third fades), a chevron turns over, a dot stretches into a line. Never swap one drawing for another.
 
 A check that appears is drawn stroke by stroke. Its two lines start as dots; the short one takes its place first and the long one 100 ms later (`transition-delay:.1s` on the long line), each by the line's own 300 ms spring. Three waiting dots become a check the same way: two travel into the strokes, the third fades.
 
@@ -48,10 +48,11 @@ One per window, in its top right corner. It says only what a control cannot show
 
 | State | Look |
 |---|---|
-| Rest | filled capsule 24 × 24 with a rest dot in the center |
-| Thinking | 44 px wide, three breathing dots, no lamp |
-| Message | lamp at the left (center 12 px from the edge), 12 px text from 24 px, cross in a 24 px box at the right; width = 24 + text width + 26 |
+| Rest | outlined capsule 24 × 24 with a rest dot in the center |
+| Thinking | outlined, 44 px wide, three breathing dots, no lamp |
+| Message | filled capsule: lamp at the left (center 12 px from the edge), 12 px text from 24 px, cross in a 24 px box at the right; width = 24 + text width + 26 |
 
+- It fills only when it has a message: an outlined drop says nothing, a filled one has something to say.
 - Grows leftward from the right edge, 420 ms spring. Maximum width: window width − 112 px.
 - One message at a time. A new message replaces the old: text changes by shared letters, the lamp color fades.
 - Never closes by itself. The cross closes it. Pressing the text reports "open" to the product; in a mockup it may reveal the detail in the window and fold the drop.
@@ -87,19 +88,19 @@ Outlined capsule, 28 px high. Sign slot at the left (center 14 px from the edge)
 
 | State | Look |
 |---|---|
-| Off | outlined capsule (1.5 px `muted`), ink `muted`, dot at `--x:-8px` (`--k` unset) |
+| Off | outlined capsule (1 px `muted`), ink `text`, dot at `--x:-8px` (`--k` unset) |
 | On | filled capsule, line at `--x:8px` (`--k:1`) |
 
 200 ms spring. Space and Enter switch it. Sized for a mouse.
 
 ## Dropdown list
 
-Outlined capsule 28 px high showing the value and a chevron.
+Outlined capsule 28 px high showing a rest dot, the value and a chevron. Its slot and text line up with the text field's, so a column of fields and lists has one left edge.
 
-- Radius 14 at every height (`ban-grown`), never a full pill once open. Value label 12 px from the left; chevron in a 20 px box, 4 px from the right.
-- Open: the same capsule grows downward into its own list over the rows below (height = 28 + 26 × rows + 4 bottom padding, 300 ms spring), the chevron flips, `--ban-shadow` appears.
+- Radius 14 at every height (`ban-grown`), never a full pill once open. Rest dot centered 14 px from the left, value label from 26 px; chevron in a 20 px box, 4 px from the right.
+- Open: the same capsule grows downward into its own list over the rows below (height = 28 + 26 × rows + 4 bottom padding, 300 ms spring), the chevron turns over, `--ban-shadow` appears.
 - Rows are inset 4 px from the sides; hover is `surface2` with radius 7; keyboard focus on a row is the ring drawn inward.
-- Row 26 px, text `muted`; the selected row is `text` with a line at the left (`--k:.6`, center 10 px from the edge). No sign on the other rows.
+- Row 26 px, text `muted` from 26 px like the value; the selected row is `text` with a line at the left (`--k:.6`, center 14 px from the edge, under the value's dot). No sign on the other rows.
 - On choice the value label changes by shared letters.
 - Keyboard: Enter, Space or Arrow Down opens; arrows move; Home and End; Enter chooses; Esc closes and returns focus; a click outside closes.
 
@@ -117,9 +118,9 @@ A track: capsule 28 px high, `card` with a 1 px `line` outline, 3 px padding. Bu
 | Button | Look |
 |---|---|
 | Main action | filled capsule 28 px high, 13 px text, 14 px side padding |
-| Quiet (secondary, in a row, in a tray) | outlined capsule 24 px high, 12 px text, 10 px side padding |
+| Quiet (secondary, in a row, in a tray) | capsule 24 px high tinted `surface2`, no outline, 12 px text, 10 px side padding. The outline is left to inputs, so a button never looks like a field |
 | With a sign | the sign sits in a slot at the left, center 14 px from the edge (12 px in a 24 px button); text starts at 26 px (22 px) |
-| Unavailable | outlined with a `line` outline and `muted` text; a sign in it collapses into a dot (`:disabled` or `aria-disabled="true"`; `banui.css` styles both on `ban-button` and `ban-cap`) |
+| Unavailable | no tint, a `line` outline and `muted` text; a sign in it collapses into a dot (`:disabled` or `aria-disabled="true"`; `banui.css` styles both on `ban-button` and `ban-cap`) |
 
 - At most one main action in a window. Everything else is quiet.
 - Press: shrinks to 0.97 (120 ms) and comes back with the spring (260 ms). Hover: nothing changes but the cursor.
@@ -183,7 +184,7 @@ Width up to 540 px, radius 14, 1 px `line` border, background `bg`, and the wind
 
 ## Mockup conventions
 
-- The page behind a window is `bg`. `surface2` is for the hover of a list row and for a plate under a specimen; `faint` is decoration only, never text.
+- The page behind a window is `bg`. `surface2` is for the hover of a list row, the fill of a quiet button and a plate under a specimen; `faint` is decoration only, never text.
 - Controls that exist only to drive the demo (state triggers, a theme switch) sit outside the window, under it, as quiet buttons or a toggle.
 - With no navigation, the header is separated from the rows by a 1 px `line`.
 - A window has 16 px side padding. Row dividers are inset by it; the divider under the header or the navigation spans the whole window. A row is at least 44 px and may grow.

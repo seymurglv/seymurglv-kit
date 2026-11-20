@@ -1,12 +1,12 @@
-/* Quiet button: a 24 px outlined capsule that gives a little under the press. */
+/* Quiet button: a 24 px capsule tinted with surface2, no outline (an outline marks an input),
+   that gives a little under the press. */
 .ban-button {
   height: 24px; padding: 0 10px; border: 0; border-radius: 12px;
-  font-size: 12px; background: var(--ban-card);
-  box-shadow: inset 0 0 0 1px var(--ban-muted);
+  font-size: 12px; background: var(--ban-surface2);
   transition: transform var(--ban-t-back) var(--ban-e-spring);
 }
 .ban-button:active { transform: scale(.97); transition: transform var(--ban-t-press); }
-/* Unavailable: a line outline and a muted label. */
+/* Unavailable: no tint, a line outline and a muted label. */
 .ban-button:disabled, .ban-button[aria-disabled="true"] {
-  color: var(--ban-muted); box-shadow: inset 0 0 0 1px var(--ban-line); cursor: default;
+  background: var(--ban-card); color: var(--ban-muted); box-shadow: inset 0 0 0 1px var(--ban-line); cursor: default;
 }
