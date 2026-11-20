@@ -7,6 +7,17 @@ Anthropic's authoring guidance and the way the strongest public skills are laid 
 [`check-skill.mjs`](check-skill.mjs) checks the rules marked **checked**. [`template/`](template) is a
 skill to start from. [`libraries/banui/skills/banui`](../../libraries/banui/skills/banui) is the worked example.
 
+An agent pays for a skill in three steps, and each step is read only when the one before it asks:
+
+```mermaid
+flowchart LR
+  description["description<br/>in every session"] -- the request matches --> hub["SKILL.md<br/>read whole"]
+  hub -- the branch table --> references["references/<br/>one branch, when sent there"]
+  hub --> scripts["scripts/<br/>run, not read"]
+  references --> scripts
+  scripts --> result(["a checked result"])
+```
+
 ## Contents
 
 - Where a skill lives

@@ -161,6 +161,22 @@ With `prefers-reduced-motion: reduce` transitions and breathing are off and labe
 
 Next to the library lies a skill for an agent, [`skills/banui/SKILL.md`](skills/banui/SKILL.md). It is one hub: the rules that always hold (the signs, the lamp map, what banui never has) and a table that sends the agent to one of four branches. When a request does not say which one is meant, the agent asks once.
 
+```mermaid
+flowchart LR
+  ask(["a request"]) --> hub["SKILL.md, the hub<br/>five signs · lamp map<br/>what banui never has"]
+  hub --> design["Design<br/>a screen, a control, a state"]
+  hub --> implement["Implement<br/>in React or Next.js"]
+  hub --> review["Review<br/>check a UI, fix when asked"]
+  hub --> library["Library<br/>add, update, delete a reference"]
+  design --> check["scripts/check.mjs<br/>and a list for the eye"]
+  implement --> check
+  review --> check
+  library --> check
+  check --> shown(["shown to you"])
+```
+
+Each branch reads only its own files from `references/`: the foundations (tokens, sizes, motion), its playbook, and the control recipes where controls are built.
+
 | Branch | What you say | What the agent does |
 |---|---|---|
 | Design | what you need: a screen, a control, a state | builds a page to look at, starting from the closest reference |

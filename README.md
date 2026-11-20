@@ -3,6 +3,21 @@
 My working kit in one repository: the things I use with coding agents, kept so that a new computer is one clone
 away. Open the folder in an agent, say "install everything", and the working environment is back.
 
+```mermaid
+flowchart LR
+  say(["say: install everything"]) --> agents["AGENTS.md<br/>the steps an agent follows"]
+  agents --> plugins["plugins/<br/>agent plugins and skills"]
+  agents --> libraries["libraries/<br/>banui: a library and its skill"]
+  agents --> setup["setup/<br/>the rm guard"]
+  guides["guides/<br/>how a skill is built"] -. the standard for .-> libraries
+  plugins --> claude(["Claude Code"])
+  libraries --> claude
+  setup --> claude
+  plugins -. skills .-> opencode(["OpenCode"])
+  libraries -. skill .-> opencode
+  setup -. deny rules .-> opencode
+```
+
 ## Contents
 
 ```text
@@ -39,6 +54,11 @@ Open a folder to see what is inside.
 | Name | Claude Code | OpenCode | What it is |
 |---|---|---|---|
 | [`banui`](libraries/banui) | skill | skill | A UI design language where every control is built from five signs (capsule, line, dot, lamp, pen stroke). The library is framework-free TypeScript and CSS with a demo and its tests; the [skill for an agent](libraries/banui/skills/banui) inside it is one hub with four branches (design, implement in React, review, library) and carries the lamp color map, the built library, a ready settings screen, control recipes and a checker |
+
+<p>
+  <img src="libraries/banui/assets/settings-light.png" alt="A banui settings window in the light theme: navigation, two text fields, a language list and two toggles" width="49%">
+  <img src="libraries/banui/assets/settings-dark.png" alt="The same settings window in the dark theme" width="49%">
+</p>
 
 </details>
 
