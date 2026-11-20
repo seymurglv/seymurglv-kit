@@ -9,7 +9,8 @@ const KINDS = ['.html', '.css', '.js', '.jsx', '.mjs', '.ts', '.tsx', '.vue', '.
 const SKIP = ['node_modules', 'kit', 'dist', '.git', '.next']
 const SIZES = ['12px', '13px', '17px', 'inherit']
 
-/** Rules that hold on any line. A rule: its name, what to look for, what to do instead. */
+/** Rules that hold on any line. A rule: its name, what to look for, what to do instead.
+ *  Black with an alpha passes the color rule: it is the window's shadow. */
 const ANYWHERE = [
   ['color', /(?<![&\w])#(?:[0-9a-f]{8}|[0-9a-f]{6})\b/i, 'a color written by hand: use var(--ban-<token>)'],
   ['color', /\b(?:rgb|hsl)a?\((?!\s*0[\s,]+0[\s,]+0\b)|\b(?:hwb|lab|lch|oklab|oklch)\(/i, 'a color written by hand: use var(--ban-<token>)'],

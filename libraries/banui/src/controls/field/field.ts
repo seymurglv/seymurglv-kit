@@ -3,13 +3,15 @@ import { drawUnderline } from '../../pen/pen.js'
 import { textWidth } from '../../motion.js'
 import { newId, sign } from '../../dom.js'
 
-export type FieldState = 'rest' | 'typing' | 'done' | 'error'
+export type FieldState = 'rest' | 'typing' | 'saving' | 'done' | 'error'
 export interface FieldOptions { validate?: (value: string) => string | null; confirm?: boolean }
 export interface FieldController extends Controller {
   readonly state: FieldState
   readonly box: HTMLElement
   check(): void
   setError(message: string | null): void
+  /** Shows three breathing dots in the right slot until `check()` or `setError()` gives the answer. Silent: no event. */
+  wait(): void
 }
 
 const SVG = 'http://www.w3.org/2000/svg'
@@ -17,7 +19,7 @@ const controllers = new WeakMap<HTMLInputElement, FieldController>()
 const settings = new WeakMap<FieldController, FieldOptions>()
 
 /**
- * Wraps an `input.ban-field` in its box and drives its four states. Validation comes from `options.validate`.
+ * Wraps an `input.ban-field` in its box and drives its five states. Validation comes from `options.validate`.
  * A repeat call with options replaces `validate` and `confirm` of the same controller; without options it changes nothing.
  */
 export function field(input: HTMLInputElement, options?: FieldOptions): FieldController {
@@ -35,7 +37,8 @@ export function field(input: HTMLInputElement, options?: FieldOptions): FieldCon
   const box = doc.createElement('span')
   box.className = 'ban-field-box'
   const dot = sign(doc, 'ban-field-sign')
-  const tick = [sign(doc, 'ban-field-tick'), sign(doc, 'ban-field-tick')]
+  // Three signs in the right slot: the waiting dots, two of which become the strokes of the check.
+  const tick = [sign(doc, 'ban-field-tick'), sign(doc, 'ban-field-tick'), sign(doc, 'ban-field-tick')]
   const pen = doc.createElementNS(SVG, 'svg') as SVGSVGElement
   pen.setAttribute('class', 'ban-pen')
   pen.setAttribute('aria-hidden', 'true')
@@ -59,6 +62,8 @@ export function field(input: HTMLInputElement, options?: FieldOptions): FieldCon
     box.dataset.state = next
     if (next === 'done' || next === 'error') dot.dataset.kind = next
     else delete dot.dataset.kind
+    if (next === 'saving') input.setAttribute('aria-busy', 'true')
+    else input.removeAttribute('aria-busy')
     if (next === 'error') {
       note.textContent = message
       input.setAttribute('aria-invalid', 'true')
@@ -92,11 +97,14 @@ export function field(input: HTMLInputElement, options?: FieldOptions): FieldCon
     input.dispatchEvent(new CustomEvent('ban:change', { bubbles: true, detail: { value, state } }))
   }
 
-  function onFocus(): void { if (state !== 'error') set('typing') }
+  // A wait ends with its answer or with an edit, not with a move of focus or Enter.
+  function onFocus(): void { if (state !== 'error' && state !== 'saving') set('typing') }
   function onInput(): void { if (state !== 'typing') set('typing') }
-  function onBlur(): void { check() }
+  function onBlur(): void { if (state !== 'saving') check() }
   // keyCode 229: the Enter that confirms an input-method candidate, which WebKit may not flag as composing.
-  function onKeydown(e: KeyboardEvent): void { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) check() }
+  function onKeydown(e: KeyboardEvent): void {
+    if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229 && state !== 'saving') check()
+  }
 
   input.addEventListener('focus', onFocus)
   input.addEventListener('input', onInput)
@@ -115,6 +123,7 @@ export function field(input: HTMLInputElement, options?: FieldOptions): FieldCon
       if (message) set('error', message)
       else if (state === 'error') set(doc.activeElement === input ? 'typing' : 'rest')
     },
+    wait() { if (current()) set('saving') },
     destroy() {
       if (controllers.get(input) !== controller) return
       input.removeEventListener('focus', onFocus)
@@ -126,6 +135,7 @@ export function field(input: HTMLInputElement, options?: FieldOptions): FieldCon
       if (ownDescribedBy === null) input.removeAttribute('aria-describedby')
       else input.setAttribute('aria-describedby', ownDescribedBy)
       input.removeAttribute('aria-invalid')
+      input.removeAttribute('aria-busy')
       if (focused) input.focus({ preventScroll: true })
       controllers.delete(input)
     },

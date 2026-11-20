@@ -6,3 +6,7 @@
   transition: transform var(--ban-t-back) var(--ban-e-spring);
 }
 .ban-button:active { transform: scale(.97); transition: transform var(--ban-t-press); }
+/* Unavailable: a line outline and a muted label. */
+.ban-button:disabled, .ban-button[aria-disabled="true"] {
+  color: var(--ban-muted); box-shadow: inset 0 0 0 1px var(--ban-line); cursor: default;
+}

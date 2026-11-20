@@ -38,6 +38,12 @@ test('каждое время из токенов стоит в таблице �
   }
 })
 
+test('тень окна в основах та же, что в примере настроек', () => {
+  const shadow = /box-shadow:\s*([^;]+);/.exec(read('examples/screen-settings/settings.css'))?.[1]
+  expect(shadow).toBeTruthy()
+  expect(read('references/foundations.md')).toContain(`\`${shadow}\``)
+})
+
 test('проверка проходит на примерах навыка', () => {
   const run = check(join(SKILL, 'examples'))
   expect(run.stderr).toBe('')

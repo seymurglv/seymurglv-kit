@@ -25,7 +25,7 @@ The values every branch uses. They are fixed: copy them, do not pick your own. C
 | `ui`, `hand` | the interface font and the hand note font |
 | `e-spring`, `e-out`, `e-fold` | the three curves |
 | `t-press`, `t-back`, `t-fast`, `t-mid`, `t-slow`, `t-fold`, `t-leave`, `t-pen`, `t-fade` | the timings of the motion table |
-| `shadow` | the one shadow, under a list that has opened over the page |
+| `shadow` | under a list that has opened over the page |
 
 `data-theme="light"` or `"dark"` on any element sets the theme of its subtree; with neither, the theme follows the system. Inside `.ban` that element also takes `bg` and `text`.
 
@@ -38,6 +38,7 @@ The values every branch uses. They are fixed: copy them, do not pick your own. C
 | Status drop | 24 px high |
 | Settings row | 44 px; right column of controls 220 px wide |
 | Window | radius 14, padding 16, header 48 |
+| Window shadow | `0 14px 32px -20px rgba(0, 0, 0, .35)`, on a window that stands on a page. Controls have no shadow; this one and the `shadow` token are the only two |
 | Text | 13 px; 12 px in navigation, the drop, 24 px buttons, captions and meta lines |
 | Reading text (a paragraph) | 13 px with line height 1.5 |
 | Page behind a window | `bg`; the window is `bg` with a 1 px `line` border |

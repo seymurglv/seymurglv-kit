@@ -35,7 +35,7 @@ main.ban {
 .row {
   display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
   padding: 8px 0;
-  transition: padding-bottom .3s var(--ban-e-spring);
+  transition: padding-bottom var(--ban-t-mid) var(--ban-e-spring);
 }
 .row + .row { border-top: 1px solid var(--ban-line); }
 /* A field in error makes room under its box for the note: the row grows by 21 px. */

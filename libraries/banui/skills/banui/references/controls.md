@@ -58,6 +58,7 @@ One per window, in its top right corner. It says only what a control cannot show
 - An attention lamp breathes until the person hovers, focuses or presses the drop.
 - All four meanings look the same: lamp, text, cross. Only the attention lamp breathes.
 - Screen readers: keep the full message in a visually hidden `aria-live="polite"` element; the letter-by-letter change is visual only.
+- The cross gets its name for screen readers from `data-close-label` on the `.ban-drop`. Set it in the product's language: the kit's own default is Russian.
 
 ## Text field
 
@@ -71,11 +72,11 @@ Outlined capsule, 28 px high. Sign slot at the left (center 14 px from the edge)
 | Error | lamp `error` | | pen stroke under the text, hand note under the field |
 
 - A settings field commits on blur and on Enter; there is no Save button next to it. A field that feeds an action (invite, search, send) has that action's main button, and Enter presses it. Validation comes from outside: a function returns nothing or a short reason.
-- Saving: three breathing dots in the right slot. They become the check there, while the left dot lights as the `done` lamp.
+- Saving: three breathing dots in the right slot. They become the check there, while the left dot lights as the `done` lamp. `wait()` on the field's controller shows the dots; `check()` or `setError()` ends the wait, and so does an edit.
 - An error stays, even while the field is focused, until the person edits the text. Then the lamp goes back to the typing line.
 - Unavailable field: outline `line`, text `muted`, rest dot.
 - The pen stroke goes under the wrong part when it is known, otherwise under the whole typed text. It draws from its start (400 ms). Its wave is fixed for a given text, not random on every show. A path that works for width `w`: `M1 5 C{w*.25} 2 {w*.5} 8 {w*.72} 4 S{w-5} 6 {w-1} 3` in an 8 px high `svg.ban-pen` placed 20 px below the field's top, with `pathLength="1"` on the path.
-- The hand note says what is wrong in two or three words ("needs @"). The row grows from 44 to 66 px (300 ms spring) to make room.
+- The hand note says what is wrong in two or three words ("needs @"). The row grows by 21 px (300 ms spring) to make room: from 44 to 65, or from 45 to 66 where the row carries its 1 px divider.
 - The outline and the text never change color on error.
 - `aria-invalid`, and `aria-describedby` pointing at the note (`role="status"`).
 - An input never has zero width at the moment it takes focus. If its container is still opening, give the input its full width at once and let the container clip it.
@@ -118,11 +119,12 @@ A track: capsule 28 px high, `card` with a 1 px `line` outline, 3 px padding. Bu
 | Main action | filled capsule 28 px high, 13 px text, 14 px side padding |
 | Quiet (secondary, in a row, in a tray) | outlined capsule 24 px high, 12 px text, 10 px side padding |
 | With a sign | the sign sits in a slot at the left, center 14 px from the edge (12 px in a 24 px button); text starts at 26 px (22 px) |
-| Unavailable | outlined with a `line` outline and `muted` text (`:disabled` in `banui.css`); a sign in it collapses into a dot |
+| Unavailable | outlined with a `line` outline and `muted` text; a sign in it collapses into a dot (`:disabled` or `aria-disabled="true"`; `banui.css` styles both on `ban-button` and `ban-cap`) |
 
 - At most one main action in a window. Everything else is quiet.
 - Press: shrinks to 0.97 (120 ms) and comes back with the spring (260 ms). Hover: nothing changes but the cursor.
 - A button that waits shows three breathing dots in place of its label and keeps its width; the dots become a check, then the new label.
+- A button stays on screen when its action is done: it carries its new label or becomes unavailable. It is never hidden.
 
 ## Answer button
 
@@ -177,7 +179,7 @@ The pen appears only for a cause: an error, a record, a first time. It is never 
 
 ## Settings window
 
-Width up to 540 px, radius 14, 1 px `line` border, background `bg`. Header 48 px with the title at the left (13 px, weight 600) and the drop at the right. Navigation below the header. Rows 44 px separated by `line`; label at the left, control at the right, all controls in a 220 px column except toggles.
+Width up to 540 px, radius 14, 1 px `line` border, background `bg`, and the window shadow from the sizes table of the foundations. Header 48 px with the title at the left (13 px, weight 600) and the drop at the right. Navigation below the header. Rows 44 px separated by `line`; label at the left, control at the right, all controls in a 220 px column except toggles.
 
 ## Mockup conventions
 

@@ -8,7 +8,7 @@ Rules, tokens and values of the language do not change while references are work
 
 Only work the owner has seen and accepted, and that passes "Before showing" in `SKILL.md`.
 
-- **A screen**: a new folder `examples/<kind>-<name>/` (lowercase letters, digits and hyphens, like `screen-settings`) with its `index.html` and its own CSS and JS. It links the kit as `../../kit/banui.css` and holds no copy of it. Leave out everything that belongs to the product: real data, names, network calls.
+- **A screen**: a new folder `examples/<kind>-<name>/` (lowercase letters, digits and hyphens, like `screen-settings`) with its `index.html` and its own CSS and JS. It links the kit as `../../kit/banui.css` and holds no copy of it. Its head has a `<title>` and the four `<meta name="banui:group">`, `banui:signs`, `banui:note` and `banui:added` lines, filled in the way `examples/screen-settings/index.html` has them. Leave out everything that belongs to the product: real data, names, network calls.
 - **A control**: a new section in `references/controls.md` (states table, which signs carry them, glyph offsets) and its line in the Contents list there.
 - If a folder or section with that name exists, this is an update: say so and switch.
 

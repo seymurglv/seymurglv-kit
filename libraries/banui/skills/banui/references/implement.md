@@ -129,19 +129,19 @@ export function Nav(props: { label: string; sections: { id: string; label: strin
 
 export type Status = { show(kind: LampKind, text: string): void; think(): void; rest(): void }
 
-export function Drop(props: { ref: Ref<Status> }) {
+export function Drop(props: { ref: Ref<Status>; closeLabel: string }) {
   const [el, control] = useBan((box: HTMLDivElement) => drop(box))
   useImperativeHandle(props.ref, () => ({
     show: (kind, text) => control.current!.show(kind, text),
     think: () => control.current!.think(),
     rest: () => control.current!.rest(),
   }), [])
-  return <div ref={el} className="ban-drop" />
+  return <div ref={el} className="ban-drop" data-close-label={props.closeLabel} />
 }
 ```
 
 - A button needs no hook: `<button className="ban-button" type="button" tabIndex={0}>`.
-- One `Drop` per window, in a container with `position: relative`. The window keeps its ref (`useRef<Status>(null)`) and calls `status.current?.show('attention', '…')`; pass it down through context when rows deep inside need it. `ban:open` (a press on the text) and `ban:close` (the cross) are ordinary events on the element.
+- One `Drop` per window, in a container with `position: relative`. `closeLabel` names the cross for screen readers in the product's language ("Close"); without it the kit says it in Russian. The window keeps its ref (`useRef<Status>(null)`) and calls `status.current?.show('attention', '…')`; pass it down through context when rows deep inside need it. `ban:open` (a press on the text) and `ban:close` (the cross) are ordinary events on the element.
 - `Drop` takes `ref` as a prop, which needs React 19. On React 18 wrap it in `forwardRef`, and write `inert` on the panels as `inert=""`.
 - The width of a field or a list is given to the `.control` wrapper (220 px in a settings row), never to the `<input>` or `<select>`.
 - A field in error draws its note under itself and takes no room: the row keeps 21 px more under it while `.ban-field-box[data-state="error"]` is inside (`:has()` in CSS, as `examples/screen-settings/settings.css` does).

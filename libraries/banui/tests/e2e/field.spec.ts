@@ -66,3 +66,31 @@ test('обводка фокуса появляется сразу', async ({ pag
   await page.goto('/demo/specimen.html'); const input = page.locator('#f-plain')
   expect(await input.evaluate(e => { (e as HTMLElement).focus(); return getComputedStyle(e.parentElement!).boxShadow })).toContain('1.5px')
 })
+test('ожидание: три точки справа, затем галочка штрих за штрихом', async ({ page }) => {
+  await page.goto('/demo/specimen.html'); const box = page.locator('#f-mail').locator('xpath=..'), ticks = box.locator('.ban-field-tick')
+  // The page's own module instance, so field() returns the controller the page built.
+  const call = (method: 'wait' | 'check'): Promise<void> => page.evaluate(async ([path, m]) => {
+    const { field } = await import(path)
+    field(document.querySelector('#f-mail'))[m]()
+  }, ['/src/controls/field/field.ts', method])
+  await call('wait'); await expect(box).toHaveAttribute('data-state', 'saving'); await expect(ticks).toHaveCount(3)
+  // The dots breathe without end, so only their travel from the check is waited for.
+  for (const i of [0, 1, 2]) await ticks.nth(i).evaluate(el => Promise.all(el.getAnimations().filter(a => a instanceof CSSTransition).map(a => a.finished)))
+  const right = (await box.boundingBox())!.x + (await box.boundingBox())!.width
+  for (const [i, fromRight] of [[0, 22], [1, 15], [2, 8]] as const) {
+    const b = (await ticks.nth(i).boundingBox())!
+    expect([b.width, b.height], `dot ${i}`).toEqual([expect.closeTo(3, 1), expect.closeTo(3, 1)])
+    expect(right - (b.x + b.width / 2), `dot ${i}`).toBeCloseTo(fromRight, 0)
+    expect(await css(ticks.nth(i), 'animation-name'), `dot ${i}`).toBe('ban-breathe')
+  }
+  expect(await css(box.locator('.ban-field-sign'), 'background-color')).toBe('rgb(17, 17, 17)')   // ожидание без цвета
+  await call('check'); await expect(box).toHaveAttribute('data-state', 'done')
+  expect(await css(ticks.nth(0), 'transition-property')).toContain('transform')
+  expect(await css(ticks.nth(0), 'transition-delay')).not.toContain('0.1s')
+  expect(await css(ticks.nth(1), 'transition-delay')).toContain('0.1s')                            // длинный штрих на 100 мс позже
+  await settle(ticks.nth(0)); await settle(ticks.nth(1)); await settle(ticks.nth(2))
+  expect(await size(ticks.nth(0))).toEqual([expect.closeTo(4.8, 0), expect.closeTo(4.8, 0)])
+  expect(await size(ticks.nth(1))).toEqual([expect.closeTo(7.8, 0), expect.closeTo(7.8, 0)])
+  expect(await css(ticks.nth(2), 'opacity')).toBe('0')
+  expect(await css(box.locator('.ban-field-sign'), 'background-color')).toBe('rgb(11, 107, 91)')
+})

@@ -17,7 +17,7 @@ The skill does one of four jobs. When the request does not say which, ask once, 
 |---|---|---|
 | **Design** | a screen, a control or a state as a page to look at | [foundations](references/foundations.md), [design](references/design.md), [controls](references/controls.md) |
 | **Implement** | banui inside a React or Next.js product | [foundations](references/foundations.md), [implement](references/implement.md), [controls](references/controls.md) |
-| **Review** | an existing UI checked against banui, or fixed | [foundations](references/foundations.md), [review](references/review.md) |
+| **Review** | an existing UI checked against banui, or fixed | [foundations](references/foundations.md), [review](references/review.md), [controls](references/controls.md) |
 | **Library** | finished work stored in the skill, a stored one updated or deleted | [library](references/library.md) |
 
 What lies next to this file:

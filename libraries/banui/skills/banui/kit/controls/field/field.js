@@ -5,7 +5,7 @@ const SVG = 'http://www.w3.org/2000/svg';
 const controllers = new WeakMap();
 const settings = new WeakMap();
 /**
- * Wraps an `input.ban-field` in its box and drives its four states. Validation comes from `options.validate`.
+ * Wraps an `input.ban-field` in its box and drives its five states. Validation comes from `options.validate`.
  * A repeat call with options replaces `validate` and `confirm` of the same controller; without options it changes nothing.
  */
 export function field(input, options) {
@@ -22,7 +22,8 @@ export function field(input, options) {
     const box = doc.createElement('span');
     box.className = 'ban-field-box';
     const dot = sign(doc, 'ban-field-sign');
-    const tick = [sign(doc, 'ban-field-tick'), sign(doc, 'ban-field-tick')];
+    // Three signs in the right slot: the waiting dots, two of which become the strokes of the check.
+    const tick = [sign(doc, 'ban-field-tick'), sign(doc, 'ban-field-tick'), sign(doc, 'ban-field-tick')];
     const pen = doc.createElementNS(SVG, 'svg');
     pen.setAttribute('class', 'ban-pen');
     pen.setAttribute('aria-hidden', 'true');
@@ -46,6 +47,10 @@ export function field(input, options) {
             dot.dataset.kind = next;
         else
             delete dot.dataset.kind;
+        if (next === 'saving')
+            input.setAttribute('aria-busy', 'true');
+        else
+            input.removeAttribute('aria-busy');
         if (next === 'error') {
             note.textContent = message;
             input.setAttribute('aria-invalid', 'true');
@@ -80,14 +85,18 @@ export function field(input, options) {
         reported = { value, state };
         input.dispatchEvent(new CustomEvent('ban:change', { bubbles: true, detail: { value, state } }));
     }
-    function onFocus() { if (state !== 'error')
+    // A wait ends with its answer or with an edit, not with a move of focus or Enter.
+    function onFocus() { if (state !== 'error' && state !== 'saving')
         set('typing'); }
     function onInput() { if (state !== 'typing')
         set('typing'); }
-    function onBlur() { check(); }
-    // keyCode 229: the Enter that confirms an input-method candidate, which WebKit may not flag as composing.
-    function onKeydown(e) { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229)
+    function onBlur() { if (state !== 'saving')
         check(); }
+    // keyCode 229: the Enter that confirms an input-method candidate, which WebKit may not flag as composing.
+    function onKeydown(e) {
+        if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229 && state !== 'saving')
+            check();
+    }
     input.addEventListener('focus', onFocus);
     input.addEventListener('input', onInput);
     input.addEventListener('blur', onBlur);
@@ -107,6 +116,8 @@ export function field(input, options) {
             else if (state === 'error')
                 set(doc.activeElement === input ? 'typing' : 'rest');
         },
+        wait() { if (current())
+            set('saving'); },
         destroy() {
             if (controllers.get(input) !== controller)
                 return;
@@ -121,6 +132,7 @@ export function field(input, options) {
             else
                 input.setAttribute('aria-describedby', ownDescribedBy);
             input.removeAttribute('aria-invalid');
+            input.removeAttribute('aria-busy');
             if (focused)
                 input.focus({ preventScroll: true });
             controllers.delete(input);
