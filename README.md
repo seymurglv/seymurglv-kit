@@ -6,16 +6,15 @@ away. Open the folder in an agent, say "install everything", and the working env
 ```mermaid
 flowchart LR
   say(["say: install everything"]) --> agents["AGENTS.md<br/>the steps an agent follows"]
-  agents --> plugins["plugins/<br/>agent plugins and skills"]
-  agents --> libraries["libraries/<br/>banui: a library and its skill"]
-  agents --> setup["setup/<br/>the rm guard"]
-  guides["guides/<br/>how a skill is built"] -. the standard for .-> libraries
-  plugins --> claude(["Claude Code"])
-  libraries --> claude
-  setup --> claude
-  plugins -. skills .-> opencode(["OpenCode"])
-  libraries -. skill .-> opencode
-  setup -. deny rules .-> opencode
+  agents --> kit
+  subgraph kit["what gets installed"]
+    direction TB
+    plugins["plugins/<br/>agent plugins and skills"]
+    libraries["libraries/<br/>banui: a library and its skill"]
+    setup["setup/<br/>the rm guard"]
+  end
+  kit --> claude(["Claude Code<br/>plugins and a hook"])
+  kit --> opencode(["OpenCode<br/>skills and deny rules"])
 ```
 
 ## Contents
