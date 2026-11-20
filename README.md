@@ -10,6 +10,7 @@ seymurglv-kit
 ├── plugins/      plugins and skills for coding agents
 ├── libraries/    code libraries
 ├── setup/        files a machine needs once
+├── guides/       how things in this kit are built
 ├── AGENTS.md     what an agent does on "install everything"
 └── README.md
 ```
@@ -37,7 +38,7 @@ Open a folder to see what is inside.
 
 | Name | Claude Code | OpenCode | What it is |
 |---|---|---|---|
-| [`banui`](libraries/banui) | skill | skill | A UI design language where every control is built from five signs (capsule, line, dot, lamp, pen stroke). The library is framework-free TypeScript and CSS with a demo and its tests; the [skill for an agent](libraries/banui/skills/banui) inside it carries the lamp color map, the built library, a ready settings screen and control recipes |
+| [`banui`](libraries/banui) | skill | skill | A UI design language where every control is built from five signs (capsule, line, dot, lamp, pen stroke). The library is framework-free TypeScript and CSS with a demo and its tests; the [skill for an agent](libraries/banui/skills/banui) inside it is one hub with four branches (design, implement in React, review, library) and carries the lamp color map, the built library, a ready settings screen, control recipes and a checker |
 
 </details>
 
@@ -49,6 +50,17 @@ Open a folder to see what is inside.
 | Name | Claude Code | OpenCode | What it is |
 |---|---|---|---|
 | [`rm guard`](setup) | hook | deny rules | Blocks every command that deletes files; a delete goes to the Trash or Recycle Bin instead, after a yes in chat |
+
+</details>
+
+<details>
+<summary><b>guides/</b> &nbsp;·&nbsp; 1 standard</summary>
+
+<br>
+
+| Name | What it is |
+|---|---|
+| [`skills`](guides/skills) | How a skill in this kit is built: where it lives, its folder, frontmatter, hub and references, checks and evals. With a template to start from and a script that checks a skill against the rules |
 
 </details>
 
@@ -99,6 +111,9 @@ One thing is one folder with its own README, plus one row in its section above.
 | `plugins/` | plugins and skills for agents; a Claude Code plugin also gets an entry in `.claude-plugin/marketplace.json` |
 | `libraries/` | code libraries |
 | `setup/` | files a machine needs once: hooks, settings |
+| `guides/` | how things here are built: a standard, its template and its check |
+
+A new skill follows [`guides/skills`](guides/skills).
 
 ## Notes
 

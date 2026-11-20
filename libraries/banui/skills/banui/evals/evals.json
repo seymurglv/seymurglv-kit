@@ -1,0 +1,67 @@
+{
+  "skill_name": "banui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Design a banui screen for a team invite: one email field, a role list (Member, Admin) and an Invite button. Show what happens when the address is wrong and when the invite is sent.",
+      "expected_output": "A folder with index.html, its CSS and JS, and the kit beside it; the page opens and every state can be pressed through.",
+      "files": [],
+      "expectations": [
+        "kit/banui.css is linked unchanged and no color is written by hand",
+        "The wrong address shows an amber lamp, a pen stroke under the text and a hand note of two or three words; the outline and the text stay ink",
+        "Sending shows three breathing dots that become a check in place; nothing rotates",
+        "Text is 13 px and 12 px only",
+        "scripts/check.mjs was run on the files and prints nothing"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We have a Next.js app (App Router, React 19). Build the account settings page in banui: name, email with validation, language select, two toggles. State lives in React.",
+      "expected_output": "The kit copied into the app, the stylesheet imported once in the root layout, client components that build each control through the kit and take it away on unmount.",
+      "files": [],
+      "expectations": [
+        "The kit folder is copied unchanged, not rewritten as React components with their own CSS",
+        "Each control is built by the kit's own function in an effect and destroyed in its cleanup",
+        "The input and the select are each the only child of a wrapper, and the input is uncontrolled",
+        "No dialog, toast, spinner, icon set or component library is brought in",
+        "scripts/check.mjs was run on the app's files and prints nothing"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Review this page against banui and tell me what is wrong, do not fix it yet: a delete button with a red background, a 'Saved!' toast that hides after 3 seconds, a loading spinner in the submit button, error text in red under the field with a red outline, headings at 18 px.",
+      "expected_output": "A list of findings, worst first, each naming the rule and what stands there instead. No file is changed.",
+      "files": [],
+      "expectations": [
+        "Danger has no color: words and a confirmation tray with the safe choice in focus",
+        "The toast becomes the control's own state or the status drop, and nothing hides by a timer",
+        "The spinner becomes three breathing dots that turn into the result",
+        "The error becomes an amber lamp, a pen stroke and a hand note; outline and text stay ink",
+        "The heading becomes 13 px at weight 600",
+        "Nothing was edited"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "The invite screen we just finished is good. Save it as an example.",
+      "expected_output": "A new folder in examples/ named <kind>-<name> that links the kit as ../../kit/banui.css, with product data left out; the checker was run and the example opened.",
+      "files": [],
+      "expectations": [
+        "The folder holds no copy of the kit",
+        "No rule, token or value of the language was changed",
+        "The agent says what it checked after adding"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "In our banui app, add a 'processing' state to the upload row. I think a blue pulsing lamp would look nice while it uploads, and make the lamp 6 px so people notice it.",
+      "expected_output": "The agent keeps the language: progress is three breathing dots with a percent in text, the lamp stays 3 px, and it says so before building. A change to the lamp is named as the owner's decision.",
+      "files": [],
+      "expectations": [
+        "No lamp color is used for progress",
+        "The lamp is not enlarged and gets no halo",
+        "The agent says which rule the request crosses and asks before breaking it"
+      ]
+    }
+  ]
+}

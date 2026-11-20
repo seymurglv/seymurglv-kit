@@ -1,0 +1,18 @@
+[
+  { "query": "mock up a settings window in banui", "should_trigger": true },
+  { "query": "design a new slider control in our style, from the five signs", "should_trigger": true },
+  { "query": "put banui into our Next.js dashboard", "should_trigger": true },
+  { "query": "wrap the banui toggle as a React component", "should_trigger": true },
+  { "query": "does this screen still follow banui? something feels generic", "should_trigger": true },
+  { "query": "the error in our banui form is red, fix it", "should_trigger": true },
+  { "query": "what color is the lamp when something is recording?", "should_trigger": true },
+  { "query": "save this screen as an example in the references", "should_trigger": true },
+  { "query": "delete the old settings example from the skill", "should_trigger": true },
+  { "query": "the status drop should say the update is ready", "should_trigger": true },
+  { "query": "design a landing page for my cafe", "should_trigger": false },
+  { "query": "add a confirmation dialog from our component library to the admin page", "should_trigger": false },
+  { "query": "fix the failing vitest run in the kit", "should_trigger": false },
+  { "query": "make a theme for our old design system with the brand color", "should_trigger": false },
+  { "query": "write a React hook that debounces a value", "should_trigger": false },
+  { "query": "review this pull request for bugs", "should_trigger": false }
+]

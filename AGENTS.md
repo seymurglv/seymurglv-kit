@@ -120,3 +120,8 @@ After a refused delete, and the person's yes, move the path to the Trash or Recy
 
 Report: what was installed, what was skipped, what the checks showed, and what the person has to do (restart,
 sign in).
+
+## Working on a skill
+
+When you add or change a skill kept in this repository, follow [`guides/skills/README.md`](guides/skills/README.md)
+and finish with `node guides/skills/check-skill.mjs`: it must print no finding.

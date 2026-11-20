@@ -1,0 +1,4 @@
+[
+  { "query": "A request that must load the skill.", "should_trigger": true },
+  { "query": "A near miss: it sounds alike, and another skill or none should take it.", "should_trigger": false }
+]

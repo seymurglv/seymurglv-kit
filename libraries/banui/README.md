@@ -159,14 +159,16 @@ With `prefers-reduced-motion: reduce` transitions and breathing are off and labe
 
 ## The skill
 
-Next to the library lies a skill for an agent, [`skills/banui/SKILL.md`](skills/banui/SKILL.md): the rules of the language, the built library and the references. It has four modes. When a request does not say which one is meant, the agent asks once.
+Next to the library lies a skill for an agent, [`skills/banui/SKILL.md`](skills/banui/SKILL.md). It is one hub: the rules that always hold (the signs, the lamp map, what banui never has) and a table that sends the agent to one of four branches. When a request does not say which one is meant, the agent asks once.
 
-| Mode | What you say | What the agent does |
+| Branch | What you say | What the agent does |
 |---|---|---|
-| Create | what you need: a screen, a control, a state | builds it new by the rules of the language, starting from the closest reference |
-| Add a reference | "add this to the references", "save this as an example" | stores finished work you have accepted in the skill |
-| Update a reference | "update the reference" | shows what will change and edits only that reference |
-| Delete a reference | "delete the example" | names what goes, waits for your yes and moves the folder to the Trash |
+| Design | what you need: a screen, a control, a state | builds a page to look at, starting from the closest reference |
+| Implement | "put this into our React app" | copies the built library into the product and builds each control through it |
+| Review | "does this still follow banui?" | runs the checker, goes through the page, lists what breaks which rule; fixes when asked |
+| Library | "save this as an example", "update the reference", "delete the example" | stores, updates or removes finished work in the skill, after your yes |
+
+Every branch ends with `scripts/check.mjs`, which finds what a pattern can see (a color written by hand, a third text size, a dialog, a toast, a spinner, a gradient, an icon set), and with a list for the eye.
 
 A reference is finished work the next agent starts from. A screen is kept as a folder in `skills/banui/examples/`, a control as a section in `skills/banui/references/controls.md`. The `kit/` folder is not a reference: `npm run build` writes it.
 
@@ -176,7 +178,7 @@ The rules of the language, its tokens and its values do not change while referen
 
 ```sh
 npm run dev        # http://127.0.0.1:5179: sign samples at /demo/specimen.html, the example at /skills/banui/examples/screen-settings/index.html
-npm run test:unit  # unit checks
+npm run test:unit  # unit checks, among them: the skill's values match the tokens
 npm run test:e2e   # checks in browsers
 npm run build      # dist/ and its exact copy in skills/banui/kit/: modules, type declarations, banui.css and fonts
 npm run shots      # screenshots of the settings window into assets/
@@ -200,10 +202,13 @@ demo/                sign samples
 showcase/            a page that shows the examples side by side
 tests/               unit and browser checks
 scripts/             the stylesheet build, the copy of the build into kit/, and screenshots
-skills/banui/        the rules of the language for an agent
-  kit/               the built library, a copy of dist/; build writes it
+skills/banui/        the language for an agent
+  SKILL.md           the hub: signs, lamp map, what banui never has, the table of branches
+  references/        foundations (tokens, sizes, motion), a playbook per branch, control recipes
   examples/          finished examples; an example's folder is copied as it is, together with kit/
-  references/        recipes for controls and glyphs
+  kit/               the built library, a copy of dist/; build writes it
+  scripts/           check.mjs, the checker every branch ends with
+  evals/             tasks and trigger phrases the skill is tested with
 assets/              screenshots for this file
 ```
 
