@@ -56,7 +56,7 @@ export function nextTtl(current: 5 | 60, gapMs: number, u: ModelUsage): 5 | 60 {
   return current
 }
 
-const live = (hb: Heartbeat, now: number): boolean => now - hb.updatedAt <= STALE_MS
+export const live = (hb: Heartbeat, now: number): boolean => now - hb.updatedAt <= STALE_MS
 
 export function boardOthers(fleet: Heartbeat[], selfId: string, now: number, o: Options): Heartbeat[] {
   return fleet.filter((hb) => {
@@ -79,14 +79,27 @@ export function toWarn(fleet: Heartbeat[], now: number, o: Options): Heartbeat[]
   return fleet.filter((hb) => live(hb, now) && lampState(hb, now, o).kind === 'cooling')
 }
 
-/** The name each session goes by: its folder, numbered when several share one (in id order). */
+/** A heartbeat's folder: an older version put the first prompt after ` · `. */
+const folder = (label: string): string => label.split(' · ')[0] ?? label
+
+/**
+ * The name each session goes by: its folder, numbered when several share one (in id order).
+ * Pass only the sessions on show, so a closed one never takes a number.
+ */
 export function labels(fleet: Heartbeat[]): Map<string, string> {
   const names = new Map<string, string>()
   const seen = new Map<string, number>()
   for (const hb of [...fleet].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))) {
-    const n = (seen.get(hb.label) ?? 0) + 1
-    seen.set(hb.label, n)
-    names.set(hb.id, n === 1 ? hb.label : `${hb.label} ${n}`)
+    const base = folder(hb.label)
+    const n = (seen.get(base) ?? 0) + 1
+    seen.set(base, n)
+    names.set(hb.id, n === 1 ? base : `${base} ${n}`)
   }
   return names
 }
+
+/** This session and the live neighbours that have a cache state: the set names are numbered within. */
+export const onShow = (fleet: Heartbeat[], me: Heartbeat, now: number): Heartbeat[] => [
+  me,
+  ...fleet.filter(hb => hb.id !== me.id && live(hb, now) && hb.lastActivity !== 0),
+]

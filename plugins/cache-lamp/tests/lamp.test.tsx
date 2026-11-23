@@ -320,6 +320,9 @@ test('a fork that never answers stops keep-warm after the deadline and the heart
   await clock.advance(55 * MIN)
   expect(seen.forks).toHaveLength(1)
   expect(await beat($)).toMatchObject({ keepWarm: 'on' })
+  // the fork still hangs, yet the heartbeat stays fresh enough for the neighbours' boards
+  const during = await clock.now()
+  expect(during - (await beat($))!.updatedAt).toBeLessThanOrEqual(30_000)
   await clock.advance(3 * MIN)
   expect(await beat($)).toMatchObject({ keepWarm: 'stopped', stopReason: 'noAnswer' })
   const at = (await beat($))!.updatedAt
@@ -521,4 +524,48 @@ test('/cache-lamp lists a cold neighbour too', RU, async ($, on) => {
   expect(text).toContain('этот чат: кэш тёплый')
   expect(text).toContain('frozen: кэш остыл')
   expect(text).not.toContain('fresh')
+})
+
+test('the board names neighbours by folder and numbers a shared one, closed ones not counted', RU, async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  await request($)
+  const now = await clock.now()
+  // a cooling neighbour in this folder, a kept one elsewhere, a closed one in this folder that must not count
+  shelf.set('hb:zz-cool', neighbour(now, { id: 'zz-cool', label: 'demo-project' }))
+  shelf.set('hb:kept', neighbour(now, { id: 'kept', label: 'unbluffed', lastActivity: now - 10 * MIN, lastOwnPrompt: now - 10 * MIN, keepWarm: 'on' }))
+  shelf.set('hb:aa-gone', neighbour(now, { id: 'aa-gone', label: 'demo-project', updatedAt: now - 2 * MIN }))
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /^demo-project 2 180k$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^unbluffed 180k$/ })).toBeDefined()
+  // the closed session took no number: had it counted, the cooling one would be `demo-project 3`
+  expect(await ui.find({ type: 'Text', text: /demo-project 3/ })).toBeUndefined()
+  await ui.unmount()
+})
+
+test('the board shows at most three neighbours, the biggest, and counts the rest', RU, async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  await request($)
+  const now = await clock.now()
+  for (const [i, ctx] of [200_000, 300_000, 400_000, 500_000, 600_000].entries()) {
+    shelf.set(`hb:n${i}`, neighbour(now, { id: `n${i}`, label: `p${i}`, ctx }))
+  }
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /^p4 600k$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^p2 400k$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^p1 300k$/ })).toBeUndefined()
+  expect(await ui.find({ type: 'Text', text: /^\+2$/ })).toBeDefined()
+  await ui.unmount()
+})
+
+test('an old label with prompt text is cut back to the folder', RU, async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  await request($)
+  const now = await clock.now()
+  shelf.set('hb:old', neighbour(now, { id: 'old', label: 'seymur-youtube · <!-- reply 1 -->' }))
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /^seymur-youtube 180k$/ })).toBeDefined()
+  await ui.unmount()
 })

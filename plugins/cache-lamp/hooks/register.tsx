@@ -6,7 +6,7 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register, RenderElement } from 'claude-code'
 
 import type { Heartbeat, Options } from '../types'
-import { DROP_MS, STALE_MS, boardOthers, labels, lampState, nextTtl, pingVerdict, shouldPing, toWarn, warnTargetId } from './state'
+import { DROP_MS, boardOthers, labels, lampState, onShow, nextTtl, pingVerdict, shouldPing, toWarn, warnTargetId } from './state'
 import { tokens, wordsFor } from './words'
 import type { Words } from './words'
 
@@ -30,6 +30,8 @@ const self = atom({ plugin: 'cache-lamp', key: 'self' } as const, NEW, { shape: 
 // Keys `${id}:${lastActivity}` of the cooling warnings already shown.
 const warned = atom({ plugin: 'cache-lamp', key: 'warned' } as const, [] as string[], { shape: 'warned-1' })
 const KEEP_WARNED = 50
+// Neighbours on the line at most; the rest are counted.
+const SHOW_OTHERS = 3
 const TOAST_MS = 15_000
 const PING_PROMPT = 'cache-lamp keep-alive. Reply with only: ok'
 // A fork that has not answered by then counts as no answer, so a hung one cannot freeze the tick.
@@ -105,6 +107,7 @@ async function warn($: EngineInterface, o: Options, words: Words, fleet: Heartbe
   const now = await $.clock.now()
   const me = await read($, self)
   if (me.id === '' || warnTargetId(fleet, now) !== me.id) return
+  const names = labels(onShow(fleet, me, now))
   const shown = new Set(await read($, warned))
   const fresh: string[] = []
   for (const hb of toWarn(fleet, now, o)) {
@@ -113,7 +116,7 @@ async function warn($: EngineInterface, o: Options, words: Words, fleet: Heartbe
     if (shown.has(k)) continue
     const s = lampState(hb, now, o)
     if (s.kind !== 'cooling') continue
-    await $.ui.toast(words.toast(hb.label, hb.id === me.id, s.leftMs, hb.ctx), { timeoutMs: TOAST_MS })
+    await $.ui.toast(words.toast(names.get(hb.id) ?? hb.label, hb.id === me.id, s.leftMs, hb.ctx), { timeoutMs: TOAST_MS })
     fresh.push(k)
   }
   if (fresh.length > 0) await update($, warned, list => [...list, ...fresh].slice(-KEEP_WARNED))
@@ -162,6 +165,12 @@ export const register: Register = (on, options) => {
     $.clock.every(TICK_MS, () => {
       tick($, opts, words).catch(() => undefined)
     })
+    // The heartbeat beats on its own, so a ping waiting on its fork never drops this session from the boards.
+    $.clock.every(TICK_MS, () => {
+      void quietly(async () => {
+        if ((await read($, self)).id !== '') await change($, h => h)
+      })
+    })
     return next(e)
   })
 
@@ -181,8 +190,10 @@ export const register: Register = (on, options) => {
       } catch {
         // the fleet is a nicety: this session's own lamp still draws
       }
-      const names = labels(fleet.some(hb => hb.id === me.id) ? fleet : [me, ...fleet])
-      const others = boardOthers(fleet, me.id, now, opts)
+      const names = labels(onShow(fleet, me, now))
+      const needLook = boardOthers(fleet, me.id, now, opts).sort((a, b) => b.ctx - a.ctx)
+      const others = needLook.slice(0, SHOW_OTHERS)
+      const more = needLook.length - others.length
       const table = $.ui.resolve(e)
       const { Box, Text } = table
       const Svg = 'Svg' in table ? table.Svg : undefined
@@ -206,15 +217,17 @@ export const register: Register = (on, options) => {
           <Text size={size} dimColor={!lit}>
             {' '}
           </Text>
-          <Text size={size} dimColor={!lit} wrap="truncate-end">
-            {words.short(mine, me.ctx) + stopped}
-          </Text>
+          <Box flexShrink={0}>
+            <Text size={size} dimColor={!lit}>
+              {words.short(mine, me.ctx) + stopped}
+            </Text>
+          </Box>
           <Box flexGrow={1} minWidth={1} />
           {others.map(hb => {
             const s = lampState(hb, now, opts)
             return (
-              <Box key={`other-${hb.id}`} flexDirection="row" alignItems="center" marginLeft={terminal ? 2 : 'sm'}>
-                <Text size={size} dimColor>
+              <Box key={`other-${hb.id}`} flexDirection="row" alignItems="center" flexShrink={1} minWidth={0} marginLeft={terminal ? 2 : 'sm'}>
+                <Text size={size} dimColor wrap="truncate-end">
                   {`${names.get(hb.id) ?? hb.label} ${tokens(hb.ctx)}`}
                 </Text>
                 <Text size={size}> </Text>
@@ -222,6 +235,11 @@ export const register: Register = (on, options) => {
               </Box>
             )
           })}
+          {more > 0 && (
+            <Box marginLeft={terminal ? 2 : 'sm'}>
+              <Text size={size} dimColor>{`+${more}`}</Text>
+            </Box>
+          )}
         </Box>
       )
       return (
@@ -238,9 +256,9 @@ export const register: Register = (on, options) => {
   on('command.run', { command: 'cache-lamp' }, async ($) => {
     const me = await read($, self)
     const now = await $.clock.now()
-    const fleet = (await readFleet($, now)).filter(hb => hb.id !== me.id && now - hb.updatedAt <= STALE_MS)
-    const names = labels([me, ...fleet])
-    const rows = [me, ...fleet]
+    const shown = onShow(await readFleet($, now), me, now)
+    const names = labels(shown)
+    const rows = shown
       .map(hb => ({ label: names.get(hb.id) ?? hb.label, s: lampState(hb, now, opts), ctx: hb.ctx, isSelf: hb.id === me.id }))
       .filter(r => r.s.kind !== 'unknown')
     return { text: rows.length === 0 ? words.none : words.list(rows) }

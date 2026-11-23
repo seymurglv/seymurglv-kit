@@ -122,3 +122,8 @@ test('a neighbour silent for over a minute leaves the board', () => {
   const fleet = [hb({ id: 'me' }), hb({ id: 'live', ...cooling, updatedAt: now - 59_000 }), hb({ id: 'gone', ...cooling, updatedAt: now - 61_000 })]
   expect(boardOthers(fleet, 'me', now, o).map(h => h.id)).toEqual(['live'])
 })
+
+test('labels count three in one folder and keep an empty label empty', () => {
+  const names = labels([hb({ id: 'c', label: 'sglv' }), hb({ id: 'a', label: 'sglv' }), hb({ id: 'b', label: 'sglv' }), hb({ id: 'z', label: '' })])
+  expect([names.get('a'), names.get('b'), names.get('c'), names.get('z')]).toEqual(['sglv', 'sglv 2', 'sglv 3', ''])
+})

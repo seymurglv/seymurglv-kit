@@ -11,8 +11,6 @@ export type Words = {
   line: (s: LampState, ctx: number) => string
   /** The lamp's own short text over the prompt box; '' for unknown. */
   short: (s: LampState, ctx: number) => string
-  /** A line naming another session: `{label}: {line}`. */
-  other: (label: string, s: LampState, ctx: number) => string
   /** The suffix on the lamp line after a ping turned keep-warm off. */
   stopped: (reason: 'rebuilt' | 'noAnswer') => string
   /** The toast when a session is about to cool. */
@@ -127,7 +125,6 @@ function build(c: Copy): Words {
   return {
     line,
     short: say(c.short),
-    other,
     stopped: (reason) => c.stopped[reason],
     toast: (label, isSelf, leftMs, ctx) =>
       isSelf
