@@ -1,0 +1,34 @@
+{
+  "name": "cache-lamp",
+  "description": "A lamp above the prompt box showing the state of the session's prompt cache, and a quiet ping that keeps a big cache warm while you are away.",
+  "author": {
+    "name": "seymurglv"
+  },
+  "license": "MIT",
+  "keywords": ["cache", "prompt-cache", "keep-warm", "function-hooks", "ui"],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "bigTokens": {
+      "type": "number",
+      "title": "Big session, in tokens",
+      "description": "A session with at least this many tokens of context counts as big: the lamp warns about it and it can be kept warm.",
+      "required": false,
+      "default": 100000
+    },
+    "keepWarmHours": {
+      "type": "number",
+      "title": "Keep warm for, hours",
+      "description": "How many hours after your last own prompt a big session is kept warm.",
+      "required": false,
+      "default": 3
+    },
+    "language": {
+      "type": "string",
+      "title": "Interface language",
+      "description": "Language of the lamp's own words.",
+      "required": false,
+      "options": ["en", "ru"],
+      "default": "en"
+    }
+  }
+}
