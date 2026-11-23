@@ -33,6 +33,17 @@ const warned = atom({ plugin: 'cache-lamp', key: 'warned' } as const, [] as stri
 const KEEP_WARNED = 50
 const TOAST_MS = 15_000
 const PING_PROMPT = 'cache-lamp keep-alive. Reply with only: ok'
+// A fork that has not answered by then counts as no answer, so a hung one cannot freeze the tick.
+const FORK_DEADLINE_MS = 2 * 60_000
+
+// The plugin's own bookkeeping must never reject the owner's prompt, compact or turn.
+async function quietly(work: () => Promise<unknown>): Promise<void> {
+  try {
+    await work()
+  } catch {
+    // the next tick writes the heartbeat again
+  }
+}
 
 const key = (id: string): string => `hb:${id}`
 
@@ -73,14 +84,21 @@ async function ping($: EngineInterface, o: Options): Promise<void> {
   if (!shouldPing(hb, await $.clock.now(), o)) return
   let stop: 'rebuilt' | 'noAnswer' | undefined
   try {
-    const reply = await $.model.fork({ prompt: PING_PROMPT })
-    if (!reply.isAnswered) stop = 'noAnswer'
+    const reply = await Promise.race([
+      $.model.fork({ prompt: PING_PROMPT }),
+      $.clock.sleep(FORK_DEADLINE_MS).then(() => null),
+    ])
+    if (reply === null || !reply.isAnswered) stop = 'noAnswer'
     else if ('usage' in reply && reply.usage !== undefined && pingVerdict(reply.usage) === 'rebuilt') stop = 'rebuilt'
   } catch {
     stop = 'noAnswer'
   }
   if (stop === undefined) await change($, (h, now) => ({ ...h, lastActivity: now }))
-  else await change($, h => ({ ...h, keepWarm: 'stopped', stopReason: stop }))
+  else {
+    const reason = stop
+    // A rebuild at ~54 min idle is evidence of a short TTL.
+    await change($, h => ({ ...h, keepWarm: 'stopped', stopReason: reason, ...(reason === 'rebuilt' ? { ttlMin: 5 as const } : {}) }))
+  }
 }
 
 // Only the session with the latest own prompt speaks, once per cache state.
@@ -120,7 +138,7 @@ async function tick($: EngineInterface, o: Options, words: Words): Promise<void>
   }
 }
 
-// The lamp: a 6x6 viewBox holding a circle 3 px across (radius 1.5), as banui fixes every dot. Desktop drops an Svg whose alt is blank.
+// The lamp: a 6x6 viewBox holding a circle 3 px across (radius 1.5), as banui fixes every dot. The alt is non-blank because Desktop drops an Svg with a blank alt.
 const REST = '#808080'
 const LIT = { light: '#2F6BFF', dark: '#5C8DFF' }
 const dot = (fill: string, breath: boolean): string =>
@@ -148,18 +166,22 @@ export const register: Register = (on, options) => {
     return next(e)
   })
 
-  // /clear, /resume and /branch go on under a new session id with an
-  // unknown cache, and raise no session.start.
   // The fleet is read from the store on every draw, so a neighbour shows
   // without waiting for this session's next turn; tick redraws every 30 s.
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next): Promise<RenderElement> => {
     const below = await next(e)
-    const me = await read($, self)
-    const now = await $.clock.now()
-    const mine = lampState(me, now, opts)
-    if (e.props.hasSurvey || e.props.isWorking || mine.kind === 'unknown') return below
+    try {
+      const me = await read($, self)
+      const now = await $.clock.now()
+      const mine = lampState(me, now, opts)
+      if (e.props.hasSurvey || e.props.isWorking || mine.kind === 'unknown') return below
 
-    const others = boardOthers(await readFleet($, now), me.id, now, opts)
+      let others: Heartbeat[] = []
+      try {
+        others = boardOthers(await readFleet($, now), me.id, now, opts)
+    } catch {
+      // the fleet is a nicety: this session's own line still draws
+    }
     const table = $.ui.resolve(e)
     const { Box, Text } = table
     const lit = mine.kind === 'cooling' && me.ctx >= opts.bigTokens
@@ -201,6 +223,9 @@ export const register: Register = (on, options) => {
         {below}
       </Box>
     )
+    } catch {
+      return below
+    }
   })
 
   on('command.run', { command: 'cache-lamp' }, async ($) => {
@@ -214,46 +239,55 @@ export const register: Register = (on, options) => {
   })
 
   on('classic.SessionStart', async ($, e, next) => {
+    // /clear, /resume and /branch go on under a new session id with an
+    // unknown cache, and raise no session.start.
     if (e.source === 'clear' || e.source === 'resume' || e.source === 'fork') {
-      const before = await read($, self)
-      if (before.id !== '' && before.id !== e.session_id) await $.store.delete(key(before.id))
-      const label = basename(await $.session.cwd())
-      await change($, hb => ({ ...hb, id: e.session_id, label, lastActivity: 0, lastOwnPrompt: 0, working: false }))
+      await quietly(async () => {
+        const before = await read($, self)
+        if (before.id !== '' && before.id !== e.session_id) await $.store.delete(key(before.id))
+        const label = basename(await $.session.cwd())
+        await change($, hb => ({ ...hb, id: e.session_id, label, lastActivity: 0, lastOwnPrompt: 0, working: false }))
+      })
     }
     return next(e)
   })
 
   on('session.compact', async ($, e, next) => {
     const result = await next(e)
-    await change($, hb => ({ ...hb, lastActivity: 0, lastOwnPrompt: 0 }))
+    await quietly(() => change($, hb => ({ ...hb, lastActivity: 0, lastOwnPrompt: 0 })))
     return result
   })
 
   on('session.end', async ($, e, next) => {
-    const hb = await read($, self)
-    if (hb.id !== '') await $.store.delete(key(hb.id))
-    // No id, so the timer's next tick writes nothing.
-    await update($, self, () => NEW)
+    await quietly(async () => {
+      const hb = await read($, self)
+      if (hb.id !== '') await $.store.delete(key(hb.id))
+      // No id, so the timer's next tick writes nothing.
+      await update($, self, () => NEW)
+    })
     return next(e)
   })
 
   on('prompt.submit', async ($, e, next) => {
-    if (e.agentId === undefined && fromPerson(e.origin)) {
-      const base = basename(await $.session.cwd())
-      const named = e.text.trim().slice(0, LABEL_CHARS).trim()
-      await change($, (hb, now) => ({
-        ...hb,
-        lastOwnPrompt: now,
-        keepWarm: 'on',
-        stopReason: undefined,
-        label: hb.label === base && named !== '' ? `${base} · ${named}` : hb.label,
-      }))
+    // A slash command is not a prompt to the model: it neither names the session nor re-arms keep-warm.
+    if (fromPerson(e.origin) && e.command === undefined) {
+      await quietly(async () => {
+        const base = basename(await $.session.cwd())
+        const named = e.text.trim().slice(0, LABEL_CHARS).trim()
+        await change($, (hb, now) => ({
+          ...hb,
+          lastOwnPrompt: now,
+          keepWarm: 'on',
+          stopReason: undefined,
+          label: hb.label === base && named !== '' ? `${base} · ${named}` : hb.label,
+        }))
+      })
     }
     return next(e)
   })
 
   on('turn.start', async ($, e, next) => {
-    if (e.agentId === undefined) await change($, hb => ({ ...hb, working: true }))
+    if (e.agentId === undefined) await quietly(() => change($, hb => ({ ...hb, working: true })))
     return next(e)
   })
 
@@ -264,21 +298,25 @@ export const register: Register = (on, options) => {
     if (e.agentId !== undefined || !result?.usage) return result
     const u = result.usage
     const total = (u.input_tokens ?? 0) + (u.cache_read_input_tokens ?? 0) + (u.cache_creation_input_tokens ?? 0)
-    await change($, (hb, now) => ({
-      ...hb,
-      ttlMin: nextTtl(hb.ttlMin, hb.lastActivity === 0 ? 0 : startedAt - hb.lastActivity, u),
-      ctx: total,
-      lastActivity: now,
-    }))
+    await quietly(() =>
+      change($, (hb, now) => ({
+        ...hb,
+        ttlMin: nextTtl(hb.ttlMin, hb.lastActivity === 0 ? 0 : startedAt - hb.lastActivity, u),
+        ctx: total,
+        lastActivity: now,
+      })),
+    )
     return result
   })
 
   on('turn.complete', async ($, e, next) => {
     const result = await next(e)
     if (e.agentId !== undefined) return result
-    const usage = await $.session.usage().catch(() => undefined)
-    const tokens = usage?.context?.tokens
-    await change($, hb => ({ ...hb, working: false, ctx: tokens ? tokens : hb.ctx }))
+    await quietly(async () => {
+      const usage = await $.session.usage().catch(() => undefined)
+      const tokens = usage?.context?.tokens
+      await change($, hb => ({ ...hb, working: false, ctx: tokens ? tokens : hb.ctx }))
+    })
     return result
   })
 }

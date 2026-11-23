@@ -26,7 +26,9 @@ const fakeStore = {
 const seen = {
   forks: [] as string[],
   toasts: [] as { text: string; timeoutMs?: number }[],
-  fork: 'read' as 'read' | 'rebuild' | 'throw',
+  fork: 'read' as 'read' | 'rebuild' | 'throw' | 'hang',
+  storeBroken: false,
+  submitted: [] as string[],
   nextStep: 'read' as 'read' | 'written',
 }
 
@@ -37,10 +39,13 @@ function engine(on: On) {
   seen.forks = []
   seen.toasts = []
   seen.fork = 'read'
+  seen.storeBroken = false
+  seen.submitted = []
   seen.nextStep = 'read'
   const clock = mock.clock(on, { now: T0 })
   on('store.get', (_, e) => ({ value: shelf.get(e.key) }))
   on('store.set', (_, e) => {
+    if (seen.storeBroken) throw new Error('disk full')
     shelf.set(e.key, e.value)
     return { value: undefined }
   })
@@ -63,6 +68,7 @@ function engine(on: On) {
   on('model.fork', (_, e) => {
     seen.forks.push(e.prompt)
     if (seen.fork === 'throw') throw new Error('no fork')
+    if (seen.fork === 'hang') return new Promise(() => undefined)
     const created = seen.fork === 'rebuild' ? CTX : 0
     return {
       value: {
@@ -77,7 +83,10 @@ function engine(on: On) {
     const { Box } = $.ui.resolve(e)
     return <Box />
   })
-  on('prompt.submit', (_, e) => ({ text: e.text }))
+  on('prompt.submit', (_, e) => {
+    seen.submitted.push(e.text)
+    return { text: e.text }
+  })
   on('session.compact', (_, e) => ({ messages: e.messages }))
   on('session.end', (_, e) => ({ sessionId: e.sessionId }))
   on('classic.SessionStart', () => ({}))
@@ -114,7 +123,12 @@ async function request($: Engine, extra: { agentId?: string } = {}) {
   await step.result
 }
 
-const typed = (text: string, extra: { agentId?: string } = {}) => ({ text, origin: { kind: 'composer' as const }, ...extra })
+const typed = (text: string, extra: { command?: { name: string; args: string } } = {}) => ({
+  text,
+  wait: false,
+  origin: { kind: 'composer' as const },
+  ...extra,
+})
 
 const beat = async (_: Engine, id = 'sess-1') => shelf.get(`hb:${id}`) as Heartbeat | undefined
 
@@ -125,7 +139,7 @@ test('a composer prompt and a request write a heartbeat with ctx, lastActivity a
   expect(fresh).toMatchObject({ id: 'sess-1', label: 'demo-project', ctx: 0, ttlMin: 60, lastActivity: 0, keepWarm: 'off' })
 
   await $.prompt.submit(typed('Fix the failing cache test in the keys module please'))
-  await $.turn.start({ turnId: 't1' })
+  await $.turn.start({ turnId: 't1', text: 'go' })
   expect((await beat($))?.working).toBe(true)
   await clock.advance(5_000)
   await request($)
@@ -149,14 +163,34 @@ test('a composer prompt and a request write a heartbeat with ctx, lastActivity a
   expect((await beat($))?.label).toBe('demo-project · Fix the failing cache test in')
 })
 
-test('a subagent prompt and step change nothing', async ($, on) => {
+test('a prompt from a non-person origin, and a subagent step and turn, change nothing', async ($, on) => {
   engine(on)
   await start($)
   const before = await beat($)
-  await $.prompt.submit(typed('inside a subagent', { agentId: 'a1' }))
+  await $.prompt.submit({ text: 'from a task', wait: false, origin: { kind: 'task-notification' } })
   await request($, { agentId: 'a1' })
-  await $.turn.start({ turnId: 't9', agentId: 'a1' })
+  await $.turn.start({ turnId: 't9', text: 'go', agentId: 'a1' })
   expect(await beat($)).toEqual(before)
+})
+
+test('a slash command is not an own prompt: no rename, no re-arm', async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  await $.prompt.submit(typed('/cache-lamp', { command: { name: 'cache-lamp', args: '' } }))
+  expect(await beat($)).toMatchObject({ label: 'demo-project', lastOwnPrompt: 0, keepWarm: 'off' })
+
+  await $.prompt.submit(typed('real prompt'))
+  await clock.advance(1_000)
+  await $.prompt.submit(typed('/cache-lamp', { command: { name: 'cache-lamp', args: '' } }))
+  expect(await beat($)).toMatchObject({ lastOwnPrompt: T0 })
+})
+
+test('a store that throws does not break the prompt', async ($, on) => {
+  engine(on)
+  await start($)
+  seen.storeBroken = true
+  await $.prompt.submit(typed('still goes through'))
+  expect(seen.submitted).toEqual(['still goes through'])
 })
 
 test('clear resets the cache to unknown', async ($, on) => {
@@ -171,7 +205,7 @@ test('clear resets the cache to unknown', async ($, on) => {
 
   await request($)
   await $.prompt.submit(typed('again'))
-  await $.session.compact({ messages: [{ role: 'user', text: 'summary', toolUses: [] }] })
+  await $.session.compact({ trigger: 'manual', messages: [{ role: 'user', text: 'summary', toolUses: [] }] })
   expect(await beat($)).toMatchObject({ lastActivity: 0, lastOwnPrompt: 0 })
 })
 
@@ -190,7 +224,7 @@ test('session.end deletes the heartbeat for good', async ($, on) => {
   const clock = engine(on)
   await start($)
   expect(await beat($)).toBeDefined()
-  await $.session.end({ sessionId: 'sess-1' })
+  await $.session.end({ sessionId: 'sess-1', reason: 'other', resume: { id: 'x' } })
   expect(await beat($)).toBeUndefined()
   await clock.advance(TICK_MS * 3)
   expect(await beat($)).toBeUndefined()
@@ -251,7 +285,7 @@ test('no ping 3 h after the last own prompt, and the warning toast follows', asy
   // pings at 54, 108 and 162 min; none once the 3 h are over
   expect(seen.forks).toHaveLength(3)
   expect(seen.toasts).toHaveLength(1)
-  expect(seen.toasts[0].timeoutMs).toBe(15_000)
+  expect(seen.toasts[0]?.timeoutMs).toBe(15_000)
   await clock.advance(MIN)
   expect(seen.forks).toHaveLength(3)
   expect(seen.toasts).toHaveLength(1)
@@ -263,7 +297,7 @@ test('a rebuilding ping stops keep-warm with reason rebuilt and never pings agai
   seen.fork = 'rebuild'
   await clock.advance(56 * MIN)
   expect(seen.forks).toHaveLength(1)
-  expect(await beat($)).toMatchObject({ keepWarm: 'stopped', stopReason: 'rebuilt' })
+  expect(await beat($)).toMatchObject({ keepWarm: 'stopped', stopReason: 'rebuilt', ttlMin: 5 })
   await clock.advance(30 * MIN)
   expect(seen.forks).toHaveLength(1)
 })
@@ -276,6 +310,21 @@ test('a fork that throws stops keep-warm with reason noAnswer', async ($, on) =>
   expect(seen.forks).toHaveLength(1)
   expect(await beat($)).toMatchObject({ keepWarm: 'stopped', stopReason: 'noAnswer' })
   await clock.advance(30 * MIN)
+  expect(seen.forks).toHaveLength(1)
+})
+
+test('a fork that never answers stops keep-warm after the deadline and the heartbeat keeps beating', async ($, on) => {
+  const clock = engine(on)
+  await idleBig($)
+  seen.fork = 'hang'
+  await clock.advance(55 * MIN)
+  expect(seen.forks).toHaveLength(1)
+  expect(await beat($)).toMatchObject({ keepWarm: 'on' })
+  await clock.advance(3 * MIN)
+  expect(await beat($)).toMatchObject({ keepWarm: 'stopped', stopReason: 'noAnswer' })
+  const at = (await beat($))!.updatedAt
+  await clock.advance(5 * MIN)
+  expect((await beat($))!.updatedAt).toBeGreaterThan(at)
   expect(seen.forks).toHaveLength(1)
 })
 
@@ -305,13 +354,13 @@ test('only the session with the latest own prompt shows the toast, once', async 
   await clock.advance(TICK_MS)
   await clock.advance(TICK_MS)
   expect(seen.toasts).toHaveLength(1)
-  expect(seen.toasts[0].text).toContain('other')
+  expect(seen.toasts[0]?.text).toContain('other')
 })
 
 test('no ping and no toast while working', async ($, on) => {
   const clock = engine(on)
   await idleBig($)
-  await $.turn.start({ turnId: 't2' })
+  await $.turn.start({ turnId: 't2', text: 'go' })
   await clock.advance(58 * MIN)
   expect(seen.forks).toHaveLength(0)
   expect(seen.toasts).toHaveLength(0)
@@ -381,28 +430,28 @@ test('the lamp lights only for a big cooling session', RU, async ($, on) => {
   await request($)
   // warm: a rest dot
   await clock.advance(10 * MIN)
-  let ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
-  expect(dump(await ui.find({ type: 'Text', text: '●' }))).not.toContain('blue')
-  await ui.unmount()
-  ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
-  expect(dump(await ui.find({ type: 'Svg' }))).toContain('#808080')
-  expect(dump(await ui.find({ type: 'Svg' }))).not.toContain('animate')
-  expect(dump(await ui.find({ type: 'Svg' }))).toContain('r=\\"1.5\\"')
-  await ui.unmount()
+  const restTerm = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(dump(await restTerm.find({ type: 'Text', text: '●' }))).not.toContain('blue')
+  await restTerm.unmount()
+  const restDesk = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  expect(dump(await restDesk.find({ type: 'Svg' }))).toContain('#808080')
+  expect(dump(await restDesk.find({ type: 'Svg' }))).not.toContain('animate')
+  expect(dump(await restDesk.find({ type: 'Svg' }))).toContain('r=\\"1.5\\"')
+  await restDesk.unmount()
 
   // cooling and big: lit
   await clock.advance(46 * MIN)
-  ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
-  expect(dump(await ui.find({ type: 'Text', text: '●' }))).toContain('blue')
-  expect(await ui.find({ type: 'Text', text: /кэш остынет через/ })).toBeDefined()
-  await ui.unmount()
-  ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
-  const svg = dump(await ui.find({ type: 'Svg' }))
+  const litTerm = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(dump(await litTerm.find({ type: 'Text', text: '●' }))).toContain('blue')
+  expect(await litTerm.find({ type: 'Text', text: /кэш остынет через/ })).toBeDefined()
+  await litTerm.unmount()
+  const litDesk = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  const svg = dump(await litDesk.find({ type: 'Svg' }))
   expect(svg).toContain('#2F6BFF')
   expect(svg).toContain('r=\\"1.5\\"')
   expect(svg).toContain('values=\\"1;0.35;1\\"')
   expect(svg).toContain('2.4s')
-  await ui.unmount()
+  await litDesk.unmount()
 })
 
 test('a small cooling session stays at rest', { options: { language: 'ru', bigTokens: 500_000 } }, async ($, on) => {

@@ -11,7 +11,7 @@ export type Words = {
   line: (s: LampState, ctx: number) => string
   /** A line naming another session: `{label}: {line}`. */
   other: (label: string, s: LampState, ctx: number) => string
-  /** The toast after a ping turned keep-warm off. */
+  /** The suffix on the lamp line after a ping turned keep-warm off. */
   stopped: (reason: 'rebuilt' | 'noAnswer') => string
   /** The toast when a session is about to cool. */
   toast: (label: string, isSelf: boolean, leftMs: number, ctx: number) => string

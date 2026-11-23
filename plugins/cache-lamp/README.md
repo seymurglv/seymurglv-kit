@@ -8,7 +8,7 @@ Claude Desktop, one session cooling, one neighbour kept warm:
 
 ```
 ● cache cools in 4 min · 180k
-  channels: keeping warm until 17:40 · 95k
+  channels: keeping warm until 17:40 · 140k
 ```
 
 Terminal:
@@ -60,7 +60,7 @@ Limits:
 - On the 5-minute TTL there is no keep-warm: 12 pings an hour would cost more than the rebuild they avoid.
 - If a ping rebuilt the cache instead of reading it (more than 10% of its tokens written, not read), or got no answer, keep-warm stops for that session. The line says why.
 - `/compact`, `/clear`, `/resume` and a fork reset the session's cache state: the lamp is dark until the next answer.
-- The TTL is read from the session's own requests, 60 minutes until it learns otherwise.
+- The TTL is inferred from the session's own requests, 60 minutes until it learns otherwise.
 - The plugin never sends a prompt of its own into the chat.
 
 ## How it works
