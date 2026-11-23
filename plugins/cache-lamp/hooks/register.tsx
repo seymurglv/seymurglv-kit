@@ -103,6 +103,8 @@ export const register: Register = (on, options) => {
   on('session.end', async ($, e, next) => {
     const hb = await read($, self)
     if (hb.id !== '') await $.store.delete(key(hb.id))
+    // No id, so the timer's next tick writes nothing.
+    await update($, self, () => NEW)
     return next(e)
   })
 

@@ -4,7 +4,7 @@ import type { Engine } from 'claude-code/testing'
 
 import type { Heartbeat } from '../types'
 import { DROP_MS, MIN } from '../hooks/state'
-import { readFleet } from '../hooks/register'
+import { TICK_MS, readFleet } from '../hooks/register'
 
 // Sunday 22 November 2026, 12:00 UTC: the clock every test starts on.
 const T0 = Date.UTC(2026, 10, 22, 12, 0, 0)
@@ -147,11 +147,24 @@ test('clear resets the cache to unknown', async ($, on) => {
   expect(await beat($)).toMatchObject({ lastActivity: 0, lastOwnPrompt: 0 })
 })
 
-test('session.end deletes the heartbeat', async ($, on) => {
+test('clear under a new session id moves the heartbeat to the new key', async ($, on) => {
   engine(on)
+  await start($)
+  await $.prompt.submit(typed('hello there'))
+  await request($)
+
+  await $.classic.SessionStart({ source: 'clear', session_id: 'sess-2' })
+  expect(shelf.has('hb:sess-1')).toBe(false)
+  expect(await beat($, 'sess-2')).toMatchObject({ id: 'sess-2', label: 'demo-project', lastActivity: 0, lastOwnPrompt: 0, working: false })
+})
+
+test('session.end deletes the heartbeat for good', async ($, on) => {
+  const clock = engine(on)
   await start($)
   expect(await beat($)).toBeDefined()
   await $.session.end({ sessionId: 'sess-1' })
+  expect(await beat($)).toBeUndefined()
+  await clock.advance(TICK_MS * 3)
   expect(await beat($)).toBeUndefined()
 })
 
