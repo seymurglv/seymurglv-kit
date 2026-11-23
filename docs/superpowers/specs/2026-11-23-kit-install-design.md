@@ -1,6 +1,20 @@
 # seymurglv-kit rebuild: pick-what-you-install and carry this Mac's settings
 
-Date: 2026-11-23. Status: draft for the owner's approval.
+Date: 2026-11-23. Status: built and merged into main (approved by the owner).
+
+## As built
+
+- **Article domains out.** At the owner's request `permissions.allow` in `settings/claude.json` carries no article
+  sites (NCBI, europepmc and the like); the only `WebFetch` domains left are `support.google.com` and
+  `code.claude.com`.
+- **The fragment is keyed by part.** `settings/claude.json` has one object per part id (`cache-lamp`, `waypoints`,
+  `taste-skill`, `banui`, `rm-guard`, `settings`); a part's keys are merged only when that part is ticked.
+- **Menu** in `curses`. `--list` reads `~/.claude/plugins/installed_plugins.json` for plugins, `~/.claude/hooks`
+  for the rm guard and `settings.json` for the rest.
+- **Flags** besides goal 1's: `--local` and `--force-settings` (see Builder's calls).
+- **Tests** in `tests/` (`test_merge`, `test_manifest`, `test_install`, `test_cli`), run with
+  `python3 -m unittest` against a temporary HOME.
+- The installer has not been run on the owner's Mac yet; his settings were already in place by hand.
 
 ## Intent
 

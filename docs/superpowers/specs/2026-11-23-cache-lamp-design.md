@@ -1,6 +1,27 @@
 # cache-lamp: design
 
-Date: 2026-11-23. Status: draft for the owner's approval.
+Date: 2026-11-23. Status: built and merged into main (approved by the owner; colours per state added the same day).
+
+## As built
+
+What follows the intent below is the design as approved. While building, the owner changed these points; where
+they disagree with the sections below, this list wins.
+
+- **One line, not a board.** This session's lamp and short words sit on the left; the neighbours that need a look
+  (cooling or kept warm) sit on the right of the same line: folder, context size, lamp. At most 3 neighbours, then
+  `+N`. Sessions in the same folder are numbered (`sglv`, `sglv 2`). Only sessions seen in the last minute count;
+  heartbeats older than an hour are dropped. `/cache-lamp` still prints the full list, cold ones included.
+- **Short words over the prompt box:** `42 мин · 180k`, `держу до 17:40 · 180k`, `остынет через 4 мин · 180k`,
+  `остыл · 180k`. The long wording in the table below is kept for `/cache-lamp`.
+- **A colour per state** (replaces "no fifth color" and the blue attention lamp): warm green `#34A853`, kept warm
+  teal `#14B8A6`, cooling amber `#F5A623` and breathing, cold grey `#8E8E93`. In the terminal: `green`, `cyan`,
+  `yellow`, a dim dot. A session under `bigTokens` never turns amber. Neighbours' lamps use the same colours.
+- **Lamp size** 6 px in Desktop (3 px was too small to see).
+- **Above waypoints.** Two `AbovePrompt` renders stack in the order of `enabledPlugins` in `~/.claude/settings.json`,
+  so cache-lamp comes first there (install.py writes that order).
+- **Timings:** the ping goes when 6 minutes of the 1-hour TTL are left; the warning window is 5 minutes on the
+  1-hour TTL and 1 minute on the 5-minute TTL. A ping with no answer in 2 minutes also turns keep-warm off, and the
+  line says why. `/compact` resets the cache state too, along with `/clear`, `/resume` and a fork.
 
 ## Intent
 
