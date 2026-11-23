@@ -31,6 +31,11 @@
       ]
     },
     {
+      "name": "cache-lamp",
+      "source": "./plugins/cache-lamp",
+      "description": "A lamp above the prompt box for the state of the session's prompt cache, and a quiet ping that keeps a big cache warm while you are away."
+    },
+    {
       "name": "modern-web-guidance",
       "source": {
         "source": "github",

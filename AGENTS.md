@@ -24,6 +24,7 @@ Plugins:
 claude plugin marketplace add seymurglv/seymurglv-kit
 claude plugin install agent-desktop@seymurglv
 claude plugin install banui@seymurglv
+claude plugin install cache-lamp@seymurglv
 claude plugin install modern-web-guidance@seymurglv
 claude plugin install taste-skill@seymurglv
 claude plugin install waypoints@seymurglv
@@ -51,7 +52,7 @@ The person restarts Claude Code; plugins load in a new session.
 
 ## 3. OpenCode
 
-OpenCode reads skills, not Claude Code plugins. `waypoints` draws in Claude Code's interface and is skipped here;
+OpenCode reads skills, not Claude Code plugins. `waypoints` and `cache-lamp` draw in Claude Code's interface and are skipped here;
 say so.
 
 Skills go into the global skills folder, next to the global `opencode.json`: `~/.config/opencode/skills/`
