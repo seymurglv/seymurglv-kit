@@ -316,3 +316,158 @@ test('no ping and no toast while working', async ($, on) => {
   expect(seen.forks).toHaveLength(0)
   expect(seen.toasts).toHaveLength(0)
 })
+
+// ---- the lamp line and /cache-lamp ----
+
+const SURFACES = ['terminal', 'desktop'] as const
+
+const BAND = {
+  plugin: 'cache-lamp',
+  component: 'AbovePrompt',
+  requestId: 'above-prompt',
+  props: {
+    hasSurvey: false,
+    isCollapsed: false,
+    isWorking: false,
+    maxRows: 20,
+    bodyColumns: 80,
+    scroll: { offset: 0, bodyRows: 19 },
+    view: {},
+  },
+} as const
+
+const RU = { options: { language: 'ru' } }
+
+const neighbour = (now: number, over: Partial<Heartbeat> = {}): Heartbeat => ({
+  id: 'sess-2',
+  label: 'other',
+  ctx: CTX,
+  ttlMin: 60,
+  lastActivity: now - 57 * MIN,
+  lastOwnPrompt: 0,
+  working: false,
+  keepWarm: 'off',
+  updatedAt: now,
+  ...over,
+})
+
+const dump = (ui: unknown): string => JSON.stringify(ui)
+
+test('nothing is drawn before the first request', RU, async ($, on) => {
+  engine(on)
+  await start($)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    expect(await ui.find({ type: 'Text', text: /●|кэш/ })).toBeUndefined()
+    await ui.unmount()
+  }
+})
+
+test('a warm line reads "кэш тёплый · 42 мин · 180k"', RU, async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  await request($)
+  await clock.advance(18 * MIN)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    expect(await ui.find({ type: 'Text', text: /кэш тёплый · 42 мин · 180k/ })).toBeDefined()
+    await ui.unmount()
+  }
+})
+
+test('the lamp lights only for a big cooling session', RU, async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  await request($)
+  // warm: a rest dot
+  await clock.advance(10 * MIN)
+  let ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(dump(await ui.find({ type: 'Text', text: '●' }))).not.toContain('blue')
+  await ui.unmount()
+  ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  expect(dump(await ui.find({ type: 'Svg' }))).toContain('#808080')
+  expect(dump(await ui.find({ type: 'Svg' }))).not.toContain('animate')
+  await ui.unmount()
+
+  // cooling and big: lit
+  await clock.advance(46 * MIN)
+  ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(dump(await ui.find({ type: 'Text', text: '●' }))).toContain('blue')
+  expect(await ui.find({ type: 'Text', text: /кэш остынет через/ })).toBeDefined()
+  await ui.unmount()
+  ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  const svg = dump(await ui.find({ type: 'Svg' }))
+  expect(svg).toContain('#2F6BFF')
+  expect(svg).toContain('values=\\"1;0.35;1\\"')
+  expect(svg).toContain('2.4s')
+  await ui.unmount()
+})
+
+test('a small cooling session stays at rest', { options: { language: 'ru', bigTokens: 500_000 } }, async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  await request($)
+  await clock.advance(56 * MIN)
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect(dump(await ui.find({ type: 'Text', text: '●' }))).not.toContain('blue')
+  await ui.unmount()
+})
+
+test('a cooling neighbour gets a row, a cold one does not', RU, async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  await request($)
+  const now = await clock.now()
+  shelf.set('hb:sess-2', neighbour(now))
+  shelf.set('hb:sess-3', neighbour(now, { id: 'sess-3', label: 'frozen', lastActivity: now - 90 * MIN }))
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    expect(await ui.find({ type: 'Text', text: /other: кэш остынет через 3 мин · 180k/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /frozen/ })).toBeUndefined()
+    await ui.unmount()
+  }
+})
+
+test('stopped keep-warm shows its reason', RU, async ($, on) => {
+  const clock = engine(on)
+  await idleBig($)
+  seen.fork = 'rebuild'
+  await clock.advance(56 * MIN)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    expect(await ui.find({ type: 'Text', text: /· подогрев выключен: пинг пересобрал кэш/ })).toBeDefined()
+    await ui.unmount()
+  }
+})
+
+test('the line hides while a turn runs or a survey is open', RU, async ($, on) => {
+  engine(on)
+  await start($)
+  await request($)
+  for (const surface of SURFACES) {
+    for (const props of [{ isWorking: true }, { hasSurvey: true }]) {
+      const ui = await $.ui.mount({ ...BAND, surface, props: { ...BAND.props, ...props } })
+      expect(await ui.find({ type: 'Text', text: /кэш|●/ })).toBeUndefined()
+      await ui.unmount()
+    }
+  }
+})
+
+test('/cache-lamp lists a cold neighbour too', RU, async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  await request($)
+  const now = await clock.now()
+  shelf.set('hb:sess-3', neighbour(now, { id: 'sess-3', label: 'frozen', lastActivity: now - 90 * MIN }))
+  shelf.set('hb:sess-4', neighbour(now, { id: 'sess-4', label: 'fresh', lastActivity: 0 }))
+  const result = await $.command.run({
+    command: 'cache-lamp',
+    args: '',
+    origin: { kind: 'composer' },
+    presentation: { isFullscreen: false, columns: 80 },
+  })
+  const text = JSON.stringify(result)
+  expect(text).toContain('этот чат: кэш тёплый')
+  expect(text).toContain('frozen: кэш остыл')
+  expect(text).not.toContain('fresh')
+})

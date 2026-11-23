@@ -3,10 +3,10 @@
 // The lamp itself, the keep-warm ping and the warning build on these values.
 
 import { atom, read, update } from 'claude-code'
-import type { EngineInterface, Register } from 'claude-code'
+import type { EngineInterface, Register, RenderElement } from 'claude-code'
 
 import type { Heartbeat, Options } from '../types'
-import { DROP_MS, lampState, nextTtl, pingVerdict, shouldPing, toWarn, warnTargetId } from './state'
+import { DROP_MS, STALE_MS, boardOthers, lampState, nextTtl, pingVerdict, shouldPing, toWarn, warnTargetId } from './state'
 import { wordsFor } from './words'
 import type { Words } from './words'
 
@@ -120,6 +120,14 @@ async function tick($: EngineInterface, o: Options, words: Words): Promise<void>
   }
 }
 
+// The lamp: 6x6, a circle of radius 3. Desktop drops an Svg whose alt is blank.
+const REST = '#808080'
+const LIT = { light: '#2F6BFF', dark: '#5C8DFF' }
+const dot = (fill: string, breath: boolean): string =>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6" width="6" height="6"><circle cx="3" cy="3" r="3" fill="${fill}">` +
+  (breath ? '<animate attributeName="opacity" values="1;0.35;1" dur="2.4s" repeatCount="indefinite"/>' : '') +
+  '</circle></svg>'
+
 const fromPerson = (origin: { kind: string } | undefined): boolean => origin?.kind === 'composer' || origin?.kind === 'bridge'
 
 export const register: Register = (on, options) => {
@@ -142,6 +150,69 @@ export const register: Register = (on, options) => {
 
   // /clear, /resume and /branch go on under a new session id with an
   // unknown cache, and raise no session.start.
+  // The fleet is read from the store on every draw, so a neighbour shows
+  // without waiting for this session's next turn; tick redraws every 30 s.
+  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next): Promise<RenderElement> => {
+    const below = await next(e)
+    const me = await read($, self)
+    const now = await $.clock.now()
+    const mine = lampState(me, now, opts)
+    if (e.props.hasSurvey || e.props.isWorking || mine.kind === 'unknown') return below
+
+    const others = boardOthers(await readFleet($, now), me.id, now, opts)
+    const table = $.ui.resolve(e)
+    const { Box, Text } = table
+    const lit = mine.kind === 'cooling' && me.ctx >= opts.bigTokens
+    const stopped = me.keepWarm === 'stopped' && me.stopReason !== undefined ? ` · ${words.stopped(me.stopReason)}` : ''
+    const text = words.line(mine, me.ctx) + stopped
+    const rows = others.map(hb => (
+      <Text key={`other-${hb.id}`} dimColor size={e.surface === 'terminal' ? undefined : 'caption'}>
+        {words.other(hb.label, lampState(hb, now, opts), hb.ctx)}
+      </Text>
+    ))
+
+    let own: RenderElement
+    if (e.surface === 'terminal') {
+      own = (
+        <Box key="own" flexDirection="row">
+          {lit ? <Text color="blue">●</Text> : <Text dimColor>●</Text>}
+          <Text dimColor={!lit}> {text}</Text>
+        </Box>
+      )
+    } else {
+      const Svg = 'Svg' in table ? table.Svg : undefined
+      // The render event carries no theme value, so the light blue.
+      const fill = lit ? LIT.light : REST
+      own = (
+        <Box key="own" flexDirection="row" alignItems="center">
+          {Svg && (
+            <Box marginRight="xs">
+              <Svg source={dot(fill, lit)} alt="lamp" width={6} height={6} />
+            </Box>
+          )}
+          <Text size="caption" dimColor={!lit}>{text}</Text>
+        </Box>
+      )
+    }
+    return (
+      <Box flexDirection="column">
+        {own}
+        {rows}
+        {below}
+      </Box>
+    )
+  })
+
+  on('command.run', { command: 'cache-lamp' }, async ($) => {
+    const me = await read($, self)
+    const now = await $.clock.now()
+    const fleet = (await readFleet($, now)).filter(hb => hb.id !== me.id && now - hb.updatedAt <= STALE_MS)
+    const rows = [me, ...fleet]
+      .map(hb => ({ label: hb.label, s: lampState(hb, now, opts), ctx: hb.ctx, isSelf: hb.id === me.id }))
+      .filter(r => r.s.kind !== 'unknown')
+    return { text: rows.length === 0 ? words.none : words.list(rows) }
+  })
+
   on('classic.SessionStart', async ($, e, next) => {
     if (e.source === 'clear' || e.source === 'resume' || e.source === 'fork') {
       const before = await read($, self)
