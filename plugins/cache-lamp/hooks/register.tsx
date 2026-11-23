@@ -5,7 +5,7 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register, RenderElement } from 'claude-code'
 
-import type { Heartbeat, Options } from '../types'
+import type { Heartbeat, LampState, Options } from '../types'
 import { DROP_MS, boardOthers, labels, lampState, onShow, nextTtl, pingVerdict, shouldPing, toWarn, warnTargetId } from './state'
 import { tokens, wordsFor } from './words'
 import type { Words } from './words'
@@ -141,8 +141,15 @@ async function tick($: EngineInterface, o: Options, words: Words): Promise<void>
 }
 
 // The lamp: a 6x6 viewBox holding a circle 3 px across (radius 1.5), as banui fixes every dot. The alt is non-blank because Desktop drops an Svg with a blank alt.
-const REST = '#808080'
-const LIT = { light: '#2F6BFF', dark: '#5C8DFF' }
+// One colour per cache state, chosen to read on light and dark themes alike (the event carries no theme).
+// Desktop gets the hex; the terminal a named colour, or a dim dot for a cold cache.
+type Kind = Exclude<LampState['kind'], 'unknown'>
+const TONE: Record<Kind, { hex: string; term?: 'green' | 'cyan' | 'yellow' }> = {
+  warm: { hex: '#34A853', term: 'green' },
+  kept: { hex: '#14B8A6', term: 'cyan' },
+  cooling: { hex: '#F5A623', term: 'yellow' },
+  cold: { hex: '#8E8E93' },
+}
 const dot = (fill: string, breath: boolean): string =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6" width="6" height="6"><circle cx="3" cy="3" r="1.5" fill="${fill}">` +
   (breath ? '<animate attributeName="opacity" values="1;0.35;1" dur="2.4s" repeatCount="indefinite"/>' : '') +
@@ -202,18 +209,19 @@ export const register: Register = (on, options) => {
       const lit = mine.kind === 'cooling' && me.ctx >= opts.bigTokens
       const stopped = me.keepWarm === 'stopped' && me.stopReason !== undefined ? ` · ${words.stopped(me.stopReason)}` : ''
 
-      // A lamp: on desktop the 3 px banui dot (light blue, as the event carries no theme), in the terminal a glyph.
-      const lamp = (k: string, isLit: boolean): RenderElement =>
-        terminal || Svg === undefined ? (
-          isLit ? <Text key={k} color="blue">●</Text> : <Text key={k} dimColor>●</Text>
-        ) : (
-          <Svg key={k} source={dot(isLit ? LIT.light : REST, isLit)} alt="lamp" width={6} height={6} />
-        )
+      // A lamp in its state's colour: on desktop a 3 px dot, in the terminal a glyph. Only a cooling one breathes.
+      const lamp = (k: string, kind: Kind): RenderElement => {
+        const tone = TONE[kind]
+        if (terminal || Svg === undefined) {
+          return tone.term ? <Text key={k} color={tone.term}>●</Text> : <Text key={k} dimColor>●</Text>
+        }
+        return <Svg key={k} source={dot(tone.hex, kind === 'cooling')} alt="lamp" width={6} height={6} />
+      }
 
       // One line: this session on the left; on the right, the neighbours that need a look, by folder and size.
       const row = (
         <Box key="cache-lamp" flexDirection="row" alignItems="center" paddingRight={terminal ? undefined : 'xs'}>
-          {lamp('own-lamp', lit)}
+          {lamp('own-lamp', mine.kind)}
           <Text size={size} dimColor={!lit}>
             {' '}
           </Text>
@@ -231,7 +239,7 @@ export const register: Register = (on, options) => {
                   {`${names.get(hb.id) ?? hb.label} ${tokens(hb.ctx)}`}
                 </Text>
                 <Text size={size}> </Text>
-                {lamp(`other-lamp-${hb.id}`, s.kind === 'cooling')}
+                {s.kind !== 'unknown' && lamp(`other-lamp-${hb.id}`, s.kind)}
               </Box>
             )
           })}

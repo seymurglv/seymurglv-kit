@@ -427,44 +427,71 @@ test('a warm line reads "42 мин · 180k"', RU, async ($, on) => {
   }
 })
 
-test('the lamp lights only for a big cooling session', RU, async ($, on) => {
+// What the own lamp looks like on each surface right now.
+async function ownLamp($: Engine) {
+  const term = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  const glyph = dump(await term.find({ type: 'Text', text: '●' }))
+  await term.unmount()
+  const desk = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  const svg = dump(await desk.find({ type: 'Svg' }))
+  await desk.unmount()
+  return { glyph, svg }
+}
+
+test('a warm cache has a green lamp', RU, async ($, on) => {
   const clock = engine(on)
   await start($)
   await request($)
-  // warm: a rest dot
   await clock.advance(10 * MIN)
-  const restTerm = await $.ui.mount({ ...BAND, surface: 'terminal' })
-  expect(dump(await restTerm.find({ type: 'Text', text: '●' }))).not.toContain('blue')
-  await restTerm.unmount()
-  const restDesk = await $.ui.mount({ ...BAND, surface: 'desktop' })
-  expect(dump(await restDesk.find({ type: 'Svg' }))).toContain('#808080')
-  expect(dump(await restDesk.find({ type: 'Svg' }))).not.toContain('animate')
-  expect(dump(await restDesk.find({ type: 'Svg' }))).toContain('r=\\"1.5\\"')
-  await restDesk.unmount()
-
-  // cooling and big: lit
-  await clock.advance(46 * MIN)
-  const litTerm = await $.ui.mount({ ...BAND, surface: 'terminal' })
-  expect(dump(await litTerm.find({ type: 'Text', text: '●' }))).toContain('blue')
-  expect(await litTerm.find({ type: 'Text', text: /^остынет через/ })).toBeDefined()
-  await litTerm.unmount()
-  const litDesk = await $.ui.mount({ ...BAND, surface: 'desktop' })
-  const svg = dump(await litDesk.find({ type: 'Svg' }))
-  expect(svg).toContain('#2F6BFF')
+  const { glyph, svg } = await ownLamp($)
+  expect(glyph).toContain('green')
+  expect(svg).toContain('#34A853')
   expect(svg).toContain('r=\\"1.5\\"')
-  expect(svg).toContain('values=\\"1;0.35;1\\"')
-  expect(svg).toContain('2.4s')
-  await litDesk.unmount()
+  expect(svg).not.toContain('animate')
 })
 
-test('a small cooling session stays at rest', { options: { language: 'ru', bigTokens: 500_000 } }, async ($, on) => {
+test('a cache kept warm has a teal lamp', RU, async ($, on) => {
+  const clock = engine(on)
+  await idleBig($)
+  await clock.advance(10 * MIN)
+  const { glyph, svg } = await ownLamp($)
+  expect(glyph).toContain('cyan')
+  expect(svg).toContain('#14B8A6')
+  expect(svg).not.toContain('animate')
+})
+
+test('a big cooling cache has an amber lamp that breathes', RU, async ($, on) => {
   const clock = engine(on)
   await start($)
   await request($)
   await clock.advance(56 * MIN)
-  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
-  expect(dump(await ui.find({ type: 'Text', text: '●' }))).not.toContain('blue')
-  await ui.unmount()
+  const { glyph, svg } = await ownLamp($)
+  expect(glyph).toContain('yellow')
+  expect(svg).toContain('#F5A623')
+  expect(svg).toContain('values=\\"1;0.35;1\\"')
+  expect(svg).toContain('2.4s')
+})
+
+test('a cold cache has a grey lamp', RU, async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  await request($)
+  await clock.advance(61 * MIN)
+  const { glyph, svg } = await ownLamp($)
+  expect(glyph).toContain('dimColor')
+  expect(glyph).not.toMatch(/green|cyan|yellow/)
+  expect(svg).toContain('#8E8E93')
+  expect(svg).not.toContain('animate')
+})
+
+test('a small session near its end stays green, never amber', { options: { language: 'ru', bigTokens: 500_000 } }, async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  await request($)
+  await clock.advance(56 * MIN)
+  const { glyph, svg } = await ownLamp($)
+  expect(glyph).toContain('green')
+  expect(svg).toContain('#34A853')
 })
 
 test('a cooling neighbour gets a row, a cold one does not', RU, async ($, on) => {

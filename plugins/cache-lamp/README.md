@@ -10,25 +10,25 @@ This session on the left, the neighbours that need a look on the right:
 ● 42 min · 51k                      sglv 357k ●   unbluffed 226k ●
 ```
 
-The dot is a banui lamp: it is blue and breathes only when a big cache is about to cool. In every other state it is a quiet grey dot. The line sits above waypoints' suggestions when `cache-lamp@seymurglv` comes before `waypoints@seymurglv` in `enabledPlugins` of `~/.claude/settings.json`: plugins draw over the prompt box in that order.
+The dot takes the state's colour: green while the cache is warm, teal while the plugin keeps it warm, amber and breathing when a big cache is about to cool, grey once it is cold. The neighbours' dots use the same colours.
 
 ## States
 
 | State | Dot | Line |
 | --- | --- | --- |
-| warm | grey | `42 min · 180k` |
-| kept warm by the plugin | grey | `kept until 17:40 · 180k` |
-| cooling (big session only) | blue, breathing | `cools in 4 min · 180k` |
+| warm | green | `42 min · 180k` |
+| kept warm by the plugin | teal | `kept until 17:40 · 180k` |
+| cooling (big session only) | amber, breathing | `cools in 4 min · 180k` |
 | cold | grey | `cold · 180k` |
 | no request yet | nothing is drawn | |
 
-Numbers are tokens, not dollars: on a subscription tokens are what the limit counts. A session under `bigTokens` shows only the line: never the blue lamp, never a warning, never a ping. Its rebuild is cheap.
+Numbers are tokens, not dollars: on a subscription tokens are what the limit counts. A session under `bigTokens` shows only the line: never the amber lamp, never a warning, never a ping. Its rebuild is cheap.
 
 ## Other sessions
 
 Each session writes a heartbeat to the plugin's shared store, and every session reads the others.
 
-- On the right of this session's line come the other sessions that need a look, cooling or kept warm: the folder, the context size and a lamp (blue when cooling). Sessions that share a folder are numbered (`sglv`, `sglv 2`). Only sessions seen in the last minute count, so a closed one leaves within a minute.
+- On the right of this session's line come the other sessions that need a look, cooling or kept warm: the folder, the context size and a lamp in the same colours (amber when cooling, teal when kept warm). Sessions that share a folder are numbered (`sglv`, `sglv 2`). Only sessions seen in the last minute count, so a closed one leaves within a minute.
 - A cold session leaves the line. Its own lamp still says so.
 - `/cache-lamp` prints every open session, this one first, cold ones included.
 
