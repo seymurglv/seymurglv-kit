@@ -10,7 +10,7 @@ This session on the left, the neighbours that need a look on the right:
 ● 42 min · 51k                      sglv 357k ●   unbluffed 226k ●
 ```
 
-The dot is a banui lamp: it is blue and breathes only when a big cache is about to cool. In every other state it is a quiet grey dot. The line sits above waypoints' suggestions.
+The dot is a banui lamp: it is blue and breathes only when a big cache is about to cool. In every other state it is a quiet grey dot. The line sits above waypoints' suggestions when `cache-lamp@seymurglv` comes before `waypoints@seymurglv` in `enabledPlugins` of `~/.claude/settings.json`: plugins draw over the prompt box in that order.
 
 ## States
 
