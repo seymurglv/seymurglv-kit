@@ -387,6 +387,7 @@ test('the lamp lights only for a big cooling session', RU, async ($, on) => {
   ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
   expect(dump(await ui.find({ type: 'Svg' }))).toContain('#808080')
   expect(dump(await ui.find({ type: 'Svg' }))).not.toContain('animate')
+  expect(dump(await ui.find({ type: 'Svg' }))).toContain('r=\\"1.5\\"')
   await ui.unmount()
 
   // cooling and big: lit
@@ -398,6 +399,7 @@ test('the lamp lights only for a big cooling session', RU, async ($, on) => {
   ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
   const svg = dump(await ui.find({ type: 'Svg' }))
   expect(svg).toContain('#2F6BFF')
+  expect(svg).toContain('r=\\"1.5\\"')
   expect(svg).toContain('values=\\"1;0.35;1\\"')
   expect(svg).toContain('2.4s')
   await ui.unmount()

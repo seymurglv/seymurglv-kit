@@ -120,11 +120,11 @@ async function tick($: EngineInterface, o: Options, words: Words): Promise<void>
   }
 }
 
-// The lamp: 6x6, a circle of radius 3. Desktop drops an Svg whose alt is blank.
+// The lamp: a 6x6 viewBox holding a circle 3 px across (radius 1.5), as banui fixes every dot. Desktop drops an Svg whose alt is blank.
 const REST = '#808080'
 const LIT = { light: '#2F6BFF', dark: '#5C8DFF' }
 const dot = (fill: string, breath: boolean): string =>
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6" width="6" height="6"><circle cx="3" cy="3" r="3" fill="${fill}">` +
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6" width="6" height="6"><circle cx="3" cy="3" r="1.5" fill="${fill}">` +
   (breath ? '<animate attributeName="opacity" values="1;0.35;1" dur="2.4s" repeatCount="indefinite"/>' : '') +
   '</circle></svg>'
 
