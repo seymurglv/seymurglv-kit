@@ -9,7 +9,7 @@ find -delete, git clean, Remove-Item, delete calls in interpreter one-liners and
 docstring). A delete then goes through `hooks/trash.py`, which moves the path to the macOS Trash or the Windows
 Recycle Bin, and only after the owner's yes in chat.
 
-Install on a Mac:
+`python3 install.py --only rm-guard` (or the menu) does all of this for you. By hand, on a Mac:
 
 ```sh
 mkdir -p ~/.claude/hooks

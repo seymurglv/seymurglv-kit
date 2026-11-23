@@ -5,7 +5,7 @@ with a `SKILL.md` that teaches an agent one job. The rules below come from the A
 Anthropic's authoring guidance and the way the strongest public skills are laid out (sources at the end).
 
 [`check-skill.mjs`](check-skill.mjs) checks the rules marked **checked**. [`template/`](template) is a
-skill to start from. [`libraries/banui/skills/banui`](../../libraries/banui/skills/banui) is the worked example.
+skill to start from. [`optional/banui/skills/banui`](../../optional/banui/skills/banui) is the worked example.
 
 An agent pays for a skill in three steps, and each step is read only when the one before it asks:
 
@@ -36,7 +36,7 @@ flowchart LR
 | The skill | Folder | Also |
 |---|---|---|
 | Stands alone, or belongs to a plugin of mine | `plugins/<plugin>/skills/<skill>/` | an entry in `.claude-plugin/marketplace.json` |
-| Teaches a library kept here | `libraries/<library>/skills/<skill>/` | the same entry, with the library folder as the plugin |
+| Teaches a library kept here | `optional/<library>/skills/<skill>/` | the same entry, with the library folder as the plugin |
 | Someone else's | not copied | a marketplace entry that points at its original repository |
 
 The folder name is the skill's `name`. Skills lie flat in `skills/`: no skill inside another skill.

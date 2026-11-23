@@ -1,0 +1,211 @@
+{
+  "cache-lamp": {
+    "enabledPlugins": {
+      "cache-lamp@seymurglv": true
+    },
+    "pluginConfigs": {
+      "cache-lamp@seymurglv": {
+        "options": {
+          "language": "ru"
+        }
+      }
+    }
+  },
+  "waypoints": {
+    "enabledPlugins": {
+      "waypoints@seymurglv": true
+    },
+    "pluginConfigs": {
+      "waypoints@seymurglv": {
+        "options": {
+          "minAnswerChars": 80,
+          "suggestSkills": true,
+          "language": "ru"
+        }
+      }
+    }
+  },
+  "taste-skill": {
+    "enabledPlugins": {
+      "taste-skill@seymurglv": true
+    }
+  },
+  "banui": {
+    "enabledPlugins": {
+      "banui@seymurglv": true
+    }
+  },
+  "rm-guard": {
+    "hooks": {
+      "PreToolUse": [
+        {
+          "matcher": "Bash",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "python3",
+              "args": [
+                "~/.claude/hooks/block_rm.py"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "settings": {
+    "includeCoAuthoredBy": false,
+    "permissions": {
+      "allow": [
+        "Bash(python3 *)",
+        "Bash(git status *)",
+        "Bash(git diff *)",
+        "Bash(git log *)",
+        "Bash(git show *)",
+        "Bash(git add *)",
+        "Bash(git commit *)",
+        "Bash(git ls-files *)",
+        "Bash(git check-ignore *)",
+        "Bash(node *)",
+        "Bash(npm run *)",
+        "Bash(ffmpeg *)",
+        "Bash(ffprobe *)",
+        "Bash(sed *)",
+        "Bash(awk *)",
+        "Bash(sort *)",
+        "Bash(mkdir *)",
+        "Bash(cp *)",
+        "Bash(mv *)",
+        "Bash(touch *)",
+        "Bash(tee *)",
+        "WebSearch",
+        "WebFetch(domain:support.google.com)",
+        "WebFetch(domain:code.claude.com)",
+        "ArtifactData"
+      ]
+    },
+    "hooks": {
+      "Notification": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "~/.config/iterm2/cc-status"
+            }
+          ]
+        }
+      ],
+      "PermissionRequest": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "~/.config/iterm2/cc-status"
+            }
+          ]
+        }
+      ],
+      "PostToolUse": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "~/.config/iterm2/cc-status"
+            }
+          ]
+        }
+      ],
+      "PreToolUse": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "~/.config/iterm2/cc-status"
+            }
+          ]
+        }
+      ],
+      "SessionEnd": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "~/.config/iterm2/cc-status"
+            }
+          ]
+        }
+      ],
+      "SessionStart": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "~/.config/iterm2/cc-status"
+            }
+          ]
+        }
+      ],
+      "Stop": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "~/.config/iterm2/cc-status"
+            }
+          ]
+        }
+      ],
+      "StopFailure": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "~/.config/iterm2/cc-status"
+            }
+          ]
+        }
+      ],
+      "SubagentStop": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "~/.config/iterm2/cc-status"
+            }
+          ]
+        }
+      ],
+      "UserPromptSubmit": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "~/.config/iterm2/cc-status"
+            }
+          ]
+        }
+      ]
+    },
+    "outputStyle": "Concise",
+    "autoUpdatesChannel": "latest",
+    "tui": "fullscreen",
+    "theme": "auto",
+    "skipWorkflowUsageWarning": true,
+    "switchModelsOnFlag": false,
+    "agentPushNotifEnabled": true,
+    "autoMode": {
+      "soft_deny": [
+        "$defaults"
+      ]
+    },
+    "extraKnownMarketplaces": {
+      "seymurglv": {
+        "source": {
+          "source": "github",
+          "repo": "seymurglv/seymurglv-kit"
+        },
+        "autoUpdate": true
+      }
+    }
+  }
+}

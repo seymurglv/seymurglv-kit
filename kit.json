@@ -1,0 +1,47 @@
+{
+  "parts": [
+    {
+      "id": "cache-lamp",
+      "title": "лампа кэша над полем ввода",
+      "kind": "plugin",
+      "default": true,
+      "plugin": "cache-lamp@seymurglv"
+    },
+    {
+      "id": "waypoints",
+      "title": "подсказки следующего шага",
+      "kind": "plugin",
+      "default": true,
+      "plugin": "waypoints@seymurglv"
+    },
+    {
+      "id": "taste-skill",
+      "title": "дизайн сайтов (из репозитория Leonxlnx)",
+      "kind": "plugin",
+      "default": true,
+      "plugin": "taste-skill@seymurglv",
+      "alias": [
+        "taste-skill@taste-skill"
+      ]
+    },
+    {
+      "id": "banui",
+      "title": "дизайн-язык banui (необязательно)",
+      "kind": "plugin",
+      "default": false,
+      "plugin": "banui@seymurglv"
+    },
+    {
+      "id": "rm-guard",
+      "title": "удаление только в Корзину",
+      "kind": "hook",
+      "default": true
+    },
+    {
+      "id": "settings",
+      "title": "настройки Claude Code этого Mac",
+      "kind": "settings",
+      "default": true
+    }
+  ]
+}

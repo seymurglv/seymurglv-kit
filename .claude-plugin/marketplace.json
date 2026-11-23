@@ -8,23 +8,8 @@
   },
   "plugins": [
     {
-      "name": "agent-desktop",
-      "source": {
-        "source": "git-subdir",
-        "url": "https://github.com/vercel-labs/agent-desktop.git",
-        "path": "skills"
-      },
-      "description": "Computer use through the OS accessibility tree, taken straight from Vercel Labs' agent-desktop repository: the core skill plus the macOS and Windows guides.",
-      "strict": false,
-      "skills": [
-        "./agent-desktop",
-        "./agent-desktop-macos",
-        "./agent-desktop-windows"
-      ]
-    },
-    {
       "name": "banui",
-      "source": "./libraries/banui",
+      "source": "./optional/banui",
       "description": "The banui design language: every control built from five signs, with a lamp color map, the built library, a ready settings screen and control recipes.",
       "skills": [
         "./skills/banui"
@@ -34,18 +19,6 @@
       "name": "cache-lamp",
       "source": "./plugins/cache-lamp",
       "description": "A lamp above the prompt box for the state of the session's prompt cache, and a quiet ping that keeps a big cache warm while you are away."
-    },
-    {
-      "name": "modern-web-guidance",
-      "source": {
-        "source": "github",
-        "repo": "GoogleChrome/modern-web-guidance"
-      },
-      "description": "Current web platform practice for HTML, CSS and client-side JS, taken straight from Google Chrome's modern-web-guidance repository: the skill searches and retrieves its guides before web code is written.",
-      "strict": false,
-      "skills": [
-        "./skills/modern-web-guidance"
-      ]
     },
     {
       "name": "taste-skill",
