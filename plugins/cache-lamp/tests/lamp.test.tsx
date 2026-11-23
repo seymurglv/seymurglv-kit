@@ -10,6 +10,7 @@ import { TICK_MS, readFleet } from '../hooks/register'
 const T0 = Date.UTC(2026, 10, 22, 12, 0, 0)
 const CWD = '/Users/me/Desktop/demo-project'
 const CTX = 180_000
+const HOUR = 60 * MIN
 
 // The plugin store, as a map the tests read and write.
 const shelf = new Map<string, unknown>()
@@ -21,10 +22,22 @@ const fakeStore = {
   },
 } as unknown as EngineInterface
 
+// What the plugin asked of the engine beneath, and how that answers.
+const seen = {
+  forks: [] as string[],
+  toasts: [] as { text: string; timeoutMs?: number }[],
+  fork: 'read' as 'read' | 'rebuild' | 'throw',
+  nextStep: 'read' as 'read' | 'written',
+}
+
 // Stands for the engine beneath the plugin: a session in a folder, one
 // request that read the whole context from the cache.
 function engine(on: On) {
   shelf.clear()
+  seen.forks = []
+  seen.toasts = []
+  seen.fork = 'read'
+  seen.nextStep = 'read'
   const clock = mock.clock(on, { now: T0 })
   on('store.get', (_, e) => ({ value: shelf.get(e.key) }))
   on('store.set', (_, e) => {
@@ -43,7 +56,22 @@ function engine(on: On) {
   on('session.usage', () => ({
     value: { startedAt: T0, context: { tokens: CTX + 500, window: 1_000_000, percent: 18 }, rateLimits: [], cost: { usd: 1 } },
   }))
-  on('ui.toast', () => ({ value: undefined }))
+  on('ui.toast', (_, e) => {
+    seen.toasts.push({ text: e.text, timeoutMs: e.timeoutMs })
+    return { value: undefined }
+  })
+  on('model.fork', (_, e) => {
+    seen.forks.push(e.prompt)
+    if (seen.fork === 'throw') throw new Error('no fork')
+    const created = seen.fork === 'rebuild' ? CTX : 0
+    return {
+      value: {
+        isAnswered: true,
+        text: 'ok',
+        usage: { input_tokens: 10, output_tokens: 2, cache_read_input_tokens: CTX - created, cache_creation_input_tokens: created, model: 'claude-opus-5-5' },
+      },
+    }
+  })
   on('ui.log', () => ({ value: undefined }))
   on('ui.render', ($, e) => {
     const { Box } = $.ui.resolve(e)
@@ -65,8 +93,8 @@ function engine(on: On) {
       usage: {
         input_tokens: 2_000,
         output_tokens: 300,
-        cache_read_input_tokens: CTX - 2_000,
-        cache_creation_input_tokens: 0,
+        cache_read_input_tokens: seen.nextStep === 'written' ? 0 : CTX - 2_000,
+        cache_creation_input_tokens: seen.nextStep === 'written' ? CTX - 2_000 : 0,
         model: 'claude-opus-5-5',
       },
     }
@@ -181,4 +209,110 @@ test('readFleet drops a heartbeat silent for over an hour', async ($, on) => {
   expect(fleet.map(h => h.id).sort()).toEqual(['recent', 'sess-1'])
   expect(shelf.has('hb:old')).toBe(false)
   expect(shelf.get('other')).toEqual({ x: 1 })
+})
+
+// A session whose last request was at T0 and whose person just prompted.
+async function idleBig($: Engine) {
+  await start($)
+  await $.prompt.submit(typed('Keep this big cache warm'))
+  await request($)
+}
+
+test('a big idle session pings at 6 min left and stays warm', async ($, on) => {
+  const clock = engine(on)
+  await idleBig($)
+  await clock.advance(53 * MIN)
+  expect(seen.forks).toHaveLength(0)
+  await clock.advance(2 * MIN)
+  expect(seen.forks).toEqual(['cache-lamp keep-alive. Reply with only: ok'])
+  const hb = await beat($)
+  expect(hb?.keepWarm).toBe('on')
+  expect(hb!.lastActivity).toBeGreaterThanOrEqual(T0 + 53 * MIN)
+  // it is warm again for a while: no second ping right after
+  await clock.advance(10 * MIN)
+  expect(seen.forks).toHaveLength(1)
+})
+
+test('no ping on the 5-min TTL', async ($, on) => {
+  const clock = engine(on)
+  await idleBig($)
+  await clock.advance(6 * MIN)
+  seen.nextStep = 'written'
+  await request($)
+  expect((await beat($))?.ttlMin).toBe(5)
+  await clock.advance(40 * MIN)
+  expect(seen.forks).toHaveLength(0)
+})
+
+test('no ping 3 h after the last own prompt, and the warning toast follows', async ($, on) => {
+  const clock = engine(on)
+  await idleBig($)
+  await clock.advance(218 * MIN)
+  // pings at 54, 108 and 162 min; none once the 3 h are over
+  expect(seen.forks).toHaveLength(3)
+  expect(seen.toasts).toHaveLength(1)
+  expect(seen.toasts[0].timeoutMs).toBe(15_000)
+  await clock.advance(MIN)
+  expect(seen.forks).toHaveLength(3)
+  expect(seen.toasts).toHaveLength(1)
+})
+
+test('a rebuilding ping stops keep-warm with reason rebuilt and never pings again', async ($, on) => {
+  const clock = engine(on)
+  await idleBig($)
+  seen.fork = 'rebuild'
+  await clock.advance(56 * MIN)
+  expect(seen.forks).toHaveLength(1)
+  expect(await beat($)).toMatchObject({ keepWarm: 'stopped', stopReason: 'rebuilt' })
+  await clock.advance(30 * MIN)
+  expect(seen.forks).toHaveLength(1)
+})
+
+test('a fork that throws stops keep-warm with reason noAnswer', async ($, on) => {
+  const clock = engine(on)
+  await idleBig($)
+  seen.fork = 'throw'
+  await clock.advance(56 * MIN)
+  expect(seen.forks).toHaveLength(1)
+  expect(await beat($)).toMatchObject({ keepWarm: 'stopped', stopReason: 'noAnswer' })
+  await clock.advance(30 * MIN)
+  expect(seen.forks).toHaveLength(1)
+})
+
+test('only the session with the latest own prompt shows the toast, once', async ($, on) => {
+  const clock = engine(on)
+  await idleBig($)
+  await clock.advance(10 * MIN)
+  const now = await clock.now()
+  const other = (lastOwnPrompt: number): Heartbeat => ({
+    id: 'sess-2',
+    label: 'other',
+    ctx: CTX,
+    ttlMin: 60,
+    lastActivity: now - 57 * MIN,
+    lastOwnPrompt,
+    working: false,
+    keepWarm: 'off',
+    updatedAt: now,
+  })
+  // the other session was prompted later: it is the target, not this one
+  shelf.set('hb:sess-2', other(now - MIN))
+  await clock.advance(TICK_MS * 2)
+  expect(seen.toasts).toHaveLength(0)
+
+  // this session was prompted later: it speaks, once
+  shelf.set('hb:sess-2', { ...other(T0 - HOUR), updatedAt: await clock.now() })
+  await clock.advance(TICK_MS)
+  await clock.advance(TICK_MS)
+  expect(seen.toasts).toHaveLength(1)
+  expect(seen.toasts[0].text).toContain('other')
+})
+
+test('no ping and no toast while working', async ($, on) => {
+  const clock = engine(on)
+  await idleBig($)
+  await $.turn.start({ turnId: 't2' })
+  await clock.advance(58 * MIN)
+  expect(seen.forks).toHaveLength(0)
+  expect(seen.toasts).toHaveLength(0)
 })

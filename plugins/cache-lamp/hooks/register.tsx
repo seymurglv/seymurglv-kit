@@ -5,9 +5,10 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { Heartbeat } from '../types'
-import { DROP_MS, nextTtl } from './state'
+import type { Heartbeat, Options } from '../types'
+import { DROP_MS, lampState, nextTtl, pingVerdict, shouldPing, toWarn, warnTargetId } from './state'
 import { wordsFor } from './words'
+import type { Words } from './words'
 
 export const TICK_MS = 30_000
 const LABEL_CHARS = 30
@@ -26,6 +27,12 @@ const NEW: Heartbeat = {
 
 // Bump the tag when the heartbeat's fields change.
 const self = atom({ plugin: 'cache-lamp', key: 'self' } as const, NEW, { shape: 'self-1' })
+
+// Keys `${id}:${lastActivity}` of the cooling warnings already shown.
+const warned = atom({ plugin: 'cache-lamp', key: 'warned' } as const, [] as string[], { shape: 'warned-1' })
+const KEEP_WARNED = 50
+const TOAST_MS = 15_000
+const PING_PROMPT = 'cache-lamp keep-alive. Reply with only: ok'
 
 const key = (id: string): string => `hb:${id}`
 
@@ -59,17 +66,68 @@ export async function readFleet($: EngineInterface, now: number): Promise<Heartb
   return fleet
 }
 
-// Runs every TICK_MS: keeps this heartbeat fresh for the other sessions.
-async function tick($: EngineInterface): Promise<void> {
+// One fork ping, when this cache is about to go cold: a rebuilt or missing
+// answer stops keep-warm, and there is no retry within the tick.
+async function ping($: EngineInterface, o: Options): Promise<void> {
   const hb = await read($, self)
-  if (hb.id === '') return
-  await change($, h => h)
+  if (!shouldPing(hb, await $.clock.now(), o)) return
+  let stop: 'rebuilt' | 'noAnswer' | undefined
+  try {
+    const reply = await $.model.fork({ prompt: PING_PROMPT })
+    if (!reply.isAnswered) stop = 'noAnswer'
+    else if ('usage' in reply && reply.usage !== undefined && pingVerdict(reply.usage) === 'rebuilt') stop = 'rebuilt'
+  } catch {
+    stop = 'noAnswer'
+  }
+  if (stop === undefined) await change($, (h, now) => ({ ...h, lastActivity: now }))
+  else await change($, h => ({ ...h, keepWarm: 'stopped', stopReason: stop }))
+}
+
+// Only the session with the latest own prompt speaks, once per cache state.
+async function warn($: EngineInterface, o: Options, words: Words, fleet: Heartbeat[]): Promise<void> {
+  const now = await $.clock.now()
+  const me = await read($, self)
+  if (me.id === '' || warnTargetId(fleet, now) !== me.id) return
+  const shown = new Set(await read($, warned))
+  const fresh: string[] = []
+  for (const hb of toWarn(fleet, now, o)) {
+    if (hb.working) continue
+    const k = `${hb.id}:${hb.lastActivity}`
+    if (shown.has(k)) continue
+    const s = lampState(hb, now, o)
+    if (s.kind !== 'cooling') continue
+    await $.ui.toast(words.toast(hb.label, hb.id === me.id, s.leftMs, hb.ctx), { timeoutMs: TOAST_MS })
+    fresh.push(k)
+  }
+  if (fresh.length > 0) await update($, warned, list => [...list, ...fresh].slice(-KEEP_WARNED))
+}
+
+// Runs every TICK_MS: keeps this heartbeat fresh for the other sessions,
+// pings a big cache that is about to cool, and warns once before one goes cold.
+let ticking = false
+async function tick($: EngineInterface, o: Options, words: Words): Promise<void> {
+  if (ticking) return
+  ticking = true
+  try {
+    const hb = await read($, self)
+    if (hb.id === '') return
+    await change($, h => h)
+    await ping($, o)
+    await warn($, o, words, await readFleet($, await $.clock.now()))
+    $.ui.invalidate('ui.render')
+  } finally {
+    ticking = false
+  }
 }
 
 const fromPerson = (origin: { kind: string } | undefined): boolean => origin?.kind === 'composer' || origin?.kind === 'bridge'
 
 export const register: Register = (on, options) => {
   const words = wordsFor(options?.language)
+  const opts: Options = {
+    bigTokens: typeof options?.bigTokens === 'number' ? options.bigTokens : 100_000,
+    keepWarmHours: typeof options?.keepWarmHours === 'number' ? options.keepWarmHours : 3,
+  }
 
   on('session.start', async ($, e, next) => {
     const id = await $.session.id()
@@ -77,7 +135,7 @@ export const register: Register = (on, options) => {
     await $.command.register({ name: 'cache-lamp', description: words.command })
     await change($, (_, now) => ({ ...NEW, id, label, updatedAt: now }))
     $.clock.every(TICK_MS, () => {
-      tick($).catch(() => undefined)
+      tick($, opts, words).catch(() => undefined)
     })
     return next(e)
   })
