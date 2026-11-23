@@ -9,6 +9,8 @@ export type Language = 'ru' | 'en'
 export type Words = {
   /** One lamp line for a session's state; '' for unknown. */
   line: (s: LampState, ctx: number) => string
+  /** The lamp's own short text over the prompt box; '' for unknown. */
+  short: (s: LampState, ctx: number) => string
   /** A line naming another session: `{label}: {line}`. */
   other: (label: string, s: LampState, ctx: number) => string
   /** The suffix on the lamp line after a ping turned keep-warm off. */
@@ -42,6 +44,12 @@ type Copy = {
   kept: (hhmm: string, tok: string) => string
   cooling: (m: number, tok: string) => string
   cold: (tok: string) => string
+  short: {
+    warm: (m: number, tok: string) => string
+    kept: (hhmm: string, tok: string) => string
+    cooling: (m: number, tok: string) => string
+    cold: (tok: string) => string
+  }
   self: string
   stopped: Record<'rebuilt' | 'noAnswer', string>
   toast: (label: string, tok: string, m: number) => string
@@ -56,6 +64,12 @@ const COPY: Record<Language, Copy> = {
     kept: (hhmm, tok) => `держу тёплым до ${hhmm} · ${tok}`,
     cooling: (m, tok) => `кэш остынет через ${m} мин · ${tok}`,
     cold: (tok) => `кэш остыл · следующее сообщение перечитает ${tok}`,
+    short: {
+      warm: (m, tok) => `${m} мин · ${tok}`,
+      kept: (hhmm, tok) => `держу до ${hhmm} · ${tok}`,
+      cooling: (m, tok) => `остынет через ${m} мин · ${tok}`,
+      cold: (tok) => `остыл · ${tok}`,
+    },
     self: 'этот чат',
     stopped: {
       rebuilt: 'подогрев выключен: пинг пересобрал кэш',
@@ -71,6 +85,12 @@ const COPY: Record<Language, Copy> = {
     kept: (hhmm, tok) => `keeping warm until ${hhmm} · ${tok}`,
     cooling: (m, tok) => `cache cools in ${m} min · ${tok}`,
     cold: (tok) => `cache cold · the next message re-reads ${tok}`,
+    short: {
+      warm: (m, tok) => `${m} min · ${tok}`,
+      kept: (hhmm, tok) => `kept until ${hhmm} · ${tok}`,
+      cooling: (m, tok) => `cools in ${m} min · ${tok}`,
+      cold: (tok) => `cold · ${tok}`,
+    },
     self: 'this chat',
     stopped: {
       rebuilt: 'keep-warm off: the ping rebuilt the cache',
@@ -83,25 +103,30 @@ const COPY: Record<Language, Copy> = {
   },
 }
 
-function build(c: Copy): Words {
-  const line = (s: LampState, ctx: number): string => {
-    const tok = tokens(ctx)
-    switch (s.kind) {
-      case 'unknown':
-        return ''
-      case 'warm':
-        return c.warm(Math.ceil(s.leftMs / MIN), tok)
-      case 'kept':
-        return c.kept(clock(s.untilMs), tok)
-      case 'cooling':
-        return c.cooling(Math.ceil(s.leftMs / MIN), tok)
-      case 'cold':
-        return c.cold(tok)
-    }
+type StateCopy = Pick<Copy, 'warm' | 'kept' | 'cooling' | 'cold'>
+
+const say = (c: StateCopy) => (s: LampState, ctx: number): string => {
+  const tok = tokens(ctx)
+  switch (s.kind) {
+    case 'unknown':
+      return ''
+    case 'warm':
+      return c.warm(Math.ceil(s.leftMs / MIN), tok)
+    case 'kept':
+      return c.kept(clock(s.untilMs), tok)
+    case 'cooling':
+      return c.cooling(Math.ceil(s.leftMs / MIN), tok)
+    case 'cold':
+      return c.cold(tok)
   }
+}
+
+function build(c: Copy): Words {
+  const line = say(c)
   const other = (label: string, s: LampState, ctx: number): string => `${label}: ${line(s, ctx)}`
   return {
     line,
+    short: say(c.short),
     other,
     stopped: (reason) => c.stopped[reason],
     toast: (label, isSelf, leftMs, ctx) =>

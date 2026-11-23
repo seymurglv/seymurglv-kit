@@ -6,12 +6,11 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register, RenderElement } from 'claude-code'
 
 import type { Heartbeat, Options } from '../types'
-import { DROP_MS, STALE_MS, boardOthers, lampState, nextTtl, pingVerdict, shouldPing, toWarn, warnTargetId } from './state'
-import { wordsFor } from './words'
+import { DROP_MS, STALE_MS, boardOthers, labels, lampState, nextTtl, pingVerdict, shouldPing, toWarn, warnTargetId } from './state'
+import { tokens, wordsFor } from './words'
 import type { Words } from './words'
 
 export const TICK_MS = 30_000
-const LABEL_CHARS = 30
 
 const NEW: Heartbeat = {
   id: '',
@@ -176,53 +175,61 @@ export const register: Register = (on, options) => {
       const mine = lampState(me, now, opts)
       if (e.props.hasSurvey || e.props.isWorking || mine.kind === 'unknown') return below
 
-      let others: Heartbeat[] = []
+      let fleet: Heartbeat[] = [me]
       try {
-        others = boardOthers(await readFleet($, now), me.id, now, opts)
-    } catch {
-      // the fleet is a nicety: this session's own line still draws
-    }
-    const table = $.ui.resolve(e)
-    const { Box, Text } = table
-    const lit = mine.kind === 'cooling' && me.ctx >= opts.bigTokens
-    const stopped = me.keepWarm === 'stopped' && me.stopReason !== undefined ? ` · ${words.stopped(me.stopReason)}` : ''
-    const text = words.line(mine, me.ctx) + stopped
-    const rows = others.map(hb => (
-      <Text key={`other-${hb.id}`} dimColor size={e.surface === 'terminal' ? undefined : 'caption'}>
-        {words.other(hb.label, lampState(hb, now, opts), hb.ctx)}
-      </Text>
-    ))
-
-    let own: RenderElement
-    if (e.surface === 'terminal') {
-      own = (
-        <Box key="own" flexDirection="row">
-          {lit ? <Text color="blue">●</Text> : <Text dimColor>●</Text>}
-          <Text dimColor={!lit}> {text}</Text>
-        </Box>
-      )
-    } else {
+        fleet = await readFleet($, now)
+      } catch {
+        // the fleet is a nicety: this session's own lamp still draws
+      }
+      const names = labels(fleet.some(hb => hb.id === me.id) ? fleet : [me, ...fleet])
+      const others = boardOthers(fleet, me.id, now, opts)
+      const table = $.ui.resolve(e)
+      const { Box, Text } = table
       const Svg = 'Svg' in table ? table.Svg : undefined
-      // The render event carries no theme value, so the light blue.
-      const fill = lit ? LIT.light : REST
-      own = (
-        <Box key="own" flexDirection="row" alignItems="center">
-          {Svg && (
-            <Box marginRight="xs">
-              <Svg source={dot(fill, lit)} alt="lamp" width={6} height={6} />
-            </Box>
-          )}
-          <Text size="caption" dimColor={!lit}>{text}</Text>
+      const terminal = e.surface === 'terminal'
+      const size = terminal ? undefined : ('caption' as const)
+      const lit = mine.kind === 'cooling' && me.ctx >= opts.bigTokens
+      const stopped = me.keepWarm === 'stopped' && me.stopReason !== undefined ? ` · ${words.stopped(me.stopReason)}` : ''
+
+      // A lamp: on desktop the 3 px banui dot (light blue, as the event carries no theme), in the terminal a glyph.
+      const lamp = (k: string, isLit: boolean): RenderElement =>
+        terminal || Svg === undefined ? (
+          isLit ? <Text key={k} color="blue">●</Text> : <Text key={k} dimColor>●</Text>
+        ) : (
+          <Svg key={k} source={dot(isLit ? LIT.light : REST, isLit)} alt="lamp" width={6} height={6} />
+        )
+
+      // One line: this session on the left; on the right, the neighbours that need a look, by folder and size.
+      const row = (
+        <Box key="cache-lamp" flexDirection="row" alignItems="center" paddingRight={terminal ? undefined : 'xs'}>
+          {lamp('own-lamp', lit)}
+          <Text size={size} dimColor={!lit}>
+            {' '}
+          </Text>
+          <Text size={size} dimColor={!lit} wrap="truncate-end">
+            {words.short(mine, me.ctx) + stopped}
+          </Text>
+          <Box flexGrow={1} minWidth={1} />
+          {others.map(hb => {
+            const s = lampState(hb, now, opts)
+            return (
+              <Box key={`other-${hb.id}`} flexDirection="row" alignItems="center" marginLeft={terminal ? 2 : 'sm'}>
+                <Text size={size} dimColor>
+                  {`${names.get(hb.id) ?? hb.label} ${tokens(hb.ctx)}`}
+                </Text>
+                <Text size={size}> </Text>
+                {lamp(`other-lamp-${hb.id}`, s.kind === 'cooling')}
+              </Box>
+            )
+          })}
         </Box>
       )
-    }
-    return (
-      <Box flexDirection="column">
-        {own}
-        {rows}
-        {below}
-      </Box>
-    )
+      return (
+        <Box flexDirection="column">
+          {below}
+          {row}
+        </Box>
+      )
     } catch {
       return below
     }
@@ -232,8 +239,9 @@ export const register: Register = (on, options) => {
     const me = await read($, self)
     const now = await $.clock.now()
     const fleet = (await readFleet($, now)).filter(hb => hb.id !== me.id && now - hb.updatedAt <= STALE_MS)
+    const names = labels([me, ...fleet])
     const rows = [me, ...fleet]
-      .map(hb => ({ label: hb.label, s: lampState(hb, now, opts), ctx: hb.ctx, isSelf: hb.id === me.id }))
+      .map(hb => ({ label: names.get(hb.id) ?? hb.label, s: lampState(hb, now, opts), ctx: hb.ctx, isSelf: hb.id === me.id }))
       .filter(r => r.s.kind !== 'unknown')
     return { text: rows.length === 0 ? words.none : words.list(rows) }
   })
@@ -269,19 +277,9 @@ export const register: Register = (on, options) => {
   })
 
   on('prompt.submit', async ($, e, next) => {
-    // A slash command is not a prompt to the model: it neither names the session nor re-arms keep-warm.
+    // A slash command is not a prompt to the model: it does not re-arm keep-warm.
     if (fromPerson(e.origin) && e.command === undefined) {
-      await quietly(async () => {
-        const base = basename(await $.session.cwd())
-        const named = e.text.trim().slice(0, LABEL_CHARS).trim()
-        await change($, (hb, now) => ({
-          ...hb,
-          lastOwnPrompt: now,
-          keepWarm: 'on',
-          stopReason: undefined,
-          label: hb.label === base && named !== '' ? `${base} · ${named}` : hb.label,
-        }))
-      })
+      await quietly(() => change($, (hb, now) => ({ ...hb, lastOwnPrompt: now, keepWarm: 'on', stopReason: undefined })))
     }
     return next(e)
   })

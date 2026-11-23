@@ -7,7 +7,7 @@ import type { Heartbeat, LampState, Options } from '../types'
 
 export const MIN = 60_000
 export const PING_AT_MS = 6 * MIN
-export const STALE_MS = 3 * MIN
+export const STALE_MS = MIN
 export const DROP_MS = 60 * MIN
 
 /** On the 5-min TTL a 5-min window would keep the lamp lit all the time. */
@@ -77,4 +77,16 @@ export function warnTargetId(fleet: Heartbeat[], now: number): string | undefine
 
 export function toWarn(fleet: Heartbeat[], now: number, o: Options): Heartbeat[] {
   return fleet.filter((hb) => live(hb, now) && lampState(hb, now, o).kind === 'cooling')
+}
+
+/** The name each session goes by: its folder, numbered when several share one (in id order). */
+export function labels(fleet: Heartbeat[]): Map<string, string> {
+  const names = new Map<string, string>()
+  const seen = new Map<string, number>()
+  for (const hb of [...fleet].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))) {
+    const n = (seen.get(hb.label) ?? 0) + 1
+    seen.set(hb.label, n)
+    names.set(hb.id, n === 1 ? hb.label : `${hb.label} ${n}`)
+  }
+  return names
 }

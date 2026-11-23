@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 
 import type { Heartbeat } from '../types'
-import { MIN, boardOthers, lampState, nextTtl, pingVerdict, shouldPing, toWarn, warnTargetId } from '../hooks/state'
+import { MIN, boardOthers, lampState, nextTtl, pingVerdict, shouldPing, toWarn, warnTargetId, labels } from '../hooks/state'
 
 const o = { bigTokens: 100_000, keepWarmHours: 3 }
 const now = 10_000_000_000
@@ -106,4 +106,19 @@ test('toWarn lists live cooling sessions', () => {
     hb({ id: 'w', lastActivity: now - 5 * MIN }),
   ]
   expect(toWarn(fleet, now, o).map((h) => h.id)).toEqual(['c'])
+})
+
+test('labels number sessions that share a folder, in id order', () => {
+  const fleet = [hb({ id: 'b', label: 'sglv' }), hb({ id: 'x', label: 'unbluffed' }), hb({ id: 'a', label: 'sglv' })]
+  const names = labels(fleet)
+  expect(names.get('a')).toBe('sglv')
+  expect(names.get('b')).toBe('sglv 2')
+  expect(names.get('x')).toBe('unbluffed')
+})
+
+test('a neighbour silent for over a minute leaves the board', () => {
+  const now = 10_000_000
+  const cooling = { ctx: 180_000, lastActivity: now - 56 * MIN, lastOwnPrompt: now - 240 * MIN }
+  const fleet = [hb({ id: 'me' }), hb({ id: 'live', ...cooling, updatedAt: now - 59_000 }), hb({ id: 'gone', ...cooling, updatedAt: now - 61_000 })]
+  expect(boardOthers(fleet, 'me', now, o).map(h => h.id)).toEqual(['live'])
 })

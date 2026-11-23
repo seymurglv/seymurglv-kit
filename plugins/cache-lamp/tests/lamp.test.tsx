@@ -145,7 +145,7 @@ test('a composer prompt and a request write a heartbeat with ctx, lastActivity a
   await request($)
   const mid = await beat($)
   expect(mid).toMatchObject({
-    label: 'demo-project · Fix the failing cache test in',
+    label: 'demo-project',
     lastOwnPrompt: T0,
     keepWarm: 'on',
     ctx: CTX,
@@ -158,9 +158,9 @@ test('a composer prompt and a request write a heartbeat with ctx, lastActivity a
   // the engine's own count of the context wins once the turn ends
   expect(end?.ctx).toBe(CTX + 500)
 
-  // only the first prompt names the session
+  // the label is the folder; a prompt never renames it
   await $.prompt.submit(typed('another'))
-  expect((await beat($))?.label).toBe('demo-project · Fix the failing cache test in')
+  expect((await beat($))?.label).toBe('demo-project')
 })
 
 test('a prompt from a non-person origin, and a subagent step and turn, change nothing', async ($, on) => {
@@ -407,19 +407,19 @@ test('nothing is drawn before the first request', RU, async ($, on) => {
   await start($)
   for (const surface of SURFACES) {
     const ui = await $.ui.mount({ ...BAND, surface })
-    expect(await ui.find({ type: 'Text', text: /●|кэш/ })).toBeUndefined()
+    expect(await ui.find({ type: 'Text', text: /●|мин/ })).toBeUndefined()
     await ui.unmount()
   }
 })
 
-test('a warm line reads "кэш тёплый · 42 мин · 180k"', RU, async ($, on) => {
+test('a warm line reads "42 мин · 180k"', RU, async ($, on) => {
   const clock = engine(on)
   await start($)
   await request($)
   await clock.advance(18 * MIN)
   for (const surface of SURFACES) {
     const ui = await $.ui.mount({ ...BAND, surface })
-    expect(await ui.find({ type: 'Text', text: /кэш тёплый · 42 мин · 180k/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /^42 мин · 180k$/ })).toBeDefined()
     await ui.unmount()
   }
 })
@@ -443,7 +443,7 @@ test('the lamp lights only for a big cooling session', RU, async ($, on) => {
   await clock.advance(46 * MIN)
   const litTerm = await $.ui.mount({ ...BAND, surface: 'terminal' })
   expect(dump(await litTerm.find({ type: 'Text', text: '●' }))).toContain('blue')
-  expect(await litTerm.find({ type: 'Text', text: /кэш остынет через/ })).toBeDefined()
+  expect(await litTerm.find({ type: 'Text', text: /^остынет через/ })).toBeDefined()
   await litTerm.unmount()
   const litDesk = await $.ui.mount({ ...BAND, surface: 'desktop' })
   const svg = dump(await litDesk.find({ type: 'Svg' }))
@@ -473,7 +473,7 @@ test('a cooling neighbour gets a row, a cold one does not', RU, async ($, on) =>
   shelf.set('hb:sess-3', neighbour(now, { id: 'sess-3', label: 'frozen', lastActivity: now - 90 * MIN }))
   for (const surface of SURFACES) {
     const ui = await $.ui.mount({ ...BAND, surface })
-    expect(await ui.find({ type: 'Text', text: /other: кэш остынет через 3 мин · 180k/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /^other 180k$/ })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: /frozen/ })).toBeUndefined()
     await ui.unmount()
   }
@@ -498,7 +498,7 @@ test('the line hides while a turn runs or a survey is open', RU, async ($, on) =
   for (const surface of SURFACES) {
     for (const props of [{ isWorking: true }, { hasSurvey: true }]) {
       const ui = await $.ui.mount({ ...BAND, surface, props: { ...BAND.props, ...props } })
-      expect(await ui.find({ type: 'Text', text: /кэш|●/ })).toBeUndefined()
+      expect(await ui.find({ type: 'Text', text: /мин|●/ })).toBeUndefined()
       await ui.unmount()
     }
   }

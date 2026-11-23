@@ -4,29 +4,22 @@ One quiet line above the prompt box shows the state of the session's prompt cach
 
 Every message re-reads the whole session. From a warm cache that is cheap. Once the cache goes cold (after 1 hour idle on a subscription, 5 minutes on the API's short TTL) the next message rebuilds the whole context and eats the usage limit.
 
-Claude Desktop, one session cooling, one neighbour kept warm:
+This session on the left, the neighbours that need a look on the right:
 
 ```
-● cache cools in 4 min · 180k
-  channels: keeping warm until 17:40 · 140k
+● 42 min · 51k                      sglv 357k ●   unbluffed 226k ●
 ```
 
-Terminal:
-
-```
-● cache warm · 42 min · 180k
-```
-
-The dot is a banui lamp: it is blue and breathes only when a big cache is about to cool. In every other state it is a quiet grey dot.
+The dot is a banui lamp: it is blue and breathes only when a big cache is about to cool. In every other state it is a quiet grey dot. The line sits above waypoints' suggestions.
 
 ## States
 
 | State | Dot | Line |
 | --- | --- | --- |
-| warm | grey | `cache warm · 42 min · 180k` |
-| kept warm by the plugin | grey | `keeping warm until 17:40 · 180k` |
-| cooling (big session only) | blue, breathing | `cache cools in 4 min · 180k` |
-| cold | grey | `cache cold · the next message re-reads 180k` |
+| warm | grey | `42 min · 180k` |
+| kept warm by the plugin | grey | `kept until 17:40 · 180k` |
+| cooling (big session only) | blue, breathing | `cools in 4 min · 180k` |
+| cold | grey | `cold · 180k` |
 | no request yet | nothing is drawn | |
 
 Numbers are tokens, not dollars: on a subscription tokens are what the limit counts. A session under `bigTokens` shows only the line: never the blue lamp, never a warning, never a ping. Its rebuild is cheap.
@@ -35,7 +28,7 @@ Numbers are tokens, not dollars: on a subscription tokens are what the limit cou
 
 Each session writes a heartbeat to the plugin's shared store, and every session reads the others.
 
-- Under this session's line come the other sessions that need a look: cooling, or kept warm. Only sessions seen in the last 3 minutes count, one line each.
+- On the right of this session's line come the other sessions that need a look, cooling or kept warm: the folder, the context size and a lamp (blue when cooling). Sessions that share a folder are numbered (`sglv`, `sglv 2`). Only sessions seen in the last minute count, so a closed one leaves within a minute.
 - A cold session leaves the line. Its own lamp still says so.
 - `/cache-lamp` prints every open session, this one first, cold ones included.
 

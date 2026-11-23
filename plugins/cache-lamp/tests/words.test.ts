@@ -18,6 +18,19 @@ test('ru line for each state', () => {
   expect(ru.line({ kind: 'unknown' }, 180_000)).toBe('')
 })
 
+test('short lamp text for each state', () => {
+  const kept: LampState = { kind: 'kept', untilMs: new Date(2026, 10, 23, 17, 40).getTime() }
+  expect(ru.short(warm4, 180_000)).toBe('4 мин · 180k')
+  expect(ru.short(kept, 180_000)).toBe('держу до 17:40 · 180k')
+  expect(ru.short({ kind: 'cooling', leftMs: 4 * MIN - 1 }, 180_000)).toBe('остынет через 4 мин · 180k')
+  expect(ru.short({ kind: 'cold', sinceMs: MIN }, 180_000)).toBe('остыл · 180k')
+  expect(ru.short({ kind: 'unknown' }, 180_000)).toBe('')
+  expect(en.short(warm4, 180_000)).toBe('4 min · 180k')
+  expect(en.short(kept, 180_000)).toBe('kept until 17:40 · 180k')
+  expect(en.short({ kind: 'cooling', leftMs: 4 * MIN - 1 }, 180_000)).toBe('cools in 4 min · 180k')
+  expect(en.short({ kind: 'cold', sinceMs: MIN }, 180_000)).toBe('cold · 180k')
+})
+
 test('en toast for self and other', () => {
   expect(en.toast('Seymur', true, 4 * MIN - 1, 180_000)).toBe('this chat: 180k cache cools in 4 min')
   expect(en.toast('Seymur', false, 4 * MIN - 1, 180_000)).toBe('Seymur: 180k cache cools in 4 min')
