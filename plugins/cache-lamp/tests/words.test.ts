@@ -32,8 +32,8 @@ test('short lamp text for each state', () => {
 })
 
 test('en toast for self and other', () => {
-  expect(en.toast('Seymur', true, 4 * MIN - 1, 180_000)).toBe('this chat: 180k cache cools in 4 min')
-  expect(en.toast('Seymur', false, 4 * MIN - 1, 180_000)).toBe('Seymur: 180k cache cools in 4 min')
+  expect(en.toast('me', true, 4 * MIN - 1, 180_000)).toBe('this chat: 180k cache cools in 4 min')
+  expect(en.toast('me', false, 4 * MIN - 1, 180_000)).toBe('me: 180k cache cools in 4 min')
   expect(ru.toast('кот', true, 4 * MIN - 1, 180_000)).toBe('этот чат: кэш 180k остынет через 4 мин')
   expect(ru.toast('кот', false, 4 * MIN - 1, 180_000)).toBe('кот: кэш 180k остынет через 4 мин')
 })

@@ -109,11 +109,11 @@ test('toWarn lists live cooling sessions', () => {
 })
 
 test('labels number sessions that share a folder, in id order', () => {
-  const fleet = [hb({ id: 'b', label: 'sglv' }), hb({ id: 'x', label: 'unbluffed' }), hb({ id: 'a', label: 'sglv' })]
+  const fleet = [hb({ id: 'b', label: 'api' }), hb({ id: 'x', label: 'docs' }), hb({ id: 'a', label: 'api' })]
   const names = labels(fleet)
-  expect(names.get('a')).toBe('sglv')
-  expect(names.get('b')).toBe('sglv 2')
-  expect(names.get('x')).toBe('unbluffed')
+  expect(names.get('a')).toBe('api')
+  expect(names.get('b')).toBe('api 2')
+  expect(names.get('x')).toBe('docs')
 })
 
 test('a neighbour silent for over a minute leaves the board', () => {
@@ -124,6 +124,6 @@ test('a neighbour silent for over a minute leaves the board', () => {
 })
 
 test('labels count three in one folder and keep an empty label empty', () => {
-  const names = labels([hb({ id: 'c', label: 'sglv' }), hb({ id: 'a', label: 'sglv' }), hb({ id: 'b', label: 'sglv' }), hb({ id: 'z', label: '' })])
-  expect([names.get('a'), names.get('b'), names.get('c'), names.get('z')]).toEqual(['sglv', 'sglv 2', 'sglv 3', ''])
+  const names = labels([hb({ id: 'c', label: 'api' }), hb({ id: 'a', label: 'api' }), hb({ id: 'b', label: 'api' }), hb({ id: 'z', label: '' })])
+  expect([names.get('a'), names.get('b'), names.get('c'), names.get('z')]).toEqual(['api', 'api 2', 'api 3', ''])
 })

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="232" viewBox="0 0 680 232" role="img" aria-label="cache-lamp: the lamp line in each state">
+  <style>
+    .card { fill: #f6f6f3; stroke: #e2e2dc; }
+    .rule { stroke: #e7e7e1; }
+    .cap { fill: #8a8a84; font: 500 11px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; letter-spacing: .04em; text-transform: uppercase; }
+    .t { fill: #77776f; font: 13px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .lit { fill: #2d2d2a; }
+    .red { fill: #d23b2f; font-weight: 600; }
+    .bg { fill: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      .card { fill: #22221f; stroke: #34342f; }
+      .rule { stroke: #30302b; }
+      .cap { fill: #85857c; }
+      .t { fill: #a3a39a; }
+      .lit { fill: #ecece6; }
+      .red { fill: #ff6b5e; }
+      .bg { fill: #1a1a18; }
+    }
+  </style>
+  <rect class="bg" x="0" y="0" width="680" height="232" rx="10"/>
+  <rect class="card" x="8.5" y="8.5" width="663" height="215" rx="8"/>
+
+  <!-- 1: warm, with neighbours -->
+  <text class="cap" x="28" y="40">warm</text>
+  <circle cx="176" cy="36" r="4" fill="#34A853"/>
+  <text class="t" x="188" y="40">42 min · 180k</text>
+  <text class="t" x="560" y="40" text-anchor="end">api 357k</text>
+  <circle cx="571" cy="36" r="4" fill="#14B8A6"/>
+  <text class="t" x="645" y="40" text-anchor="end">docs 226k</text>
+  <circle cx="656" cy="36" r="4" fill="#F5A623"/>
+  <line class="rule" x1="20" y1="56" x2="660" y2="56"/>
+
+  <!-- 2: kept warm -->
+  <text class="cap" x="28" y="82">kept warm</text>
+  <circle cx="176" cy="78" r="4" fill="#14B8A6"/>
+  <text class="t" x="188" y="82">kept until 17:40 · 180k</text>
+  <line class="rule" x1="20" y1="98" x2="660" y2="98"/>
+
+  <!-- 3: cooling: the line lights up -->
+  <text class="cap" x="28" y="124">about to cool</text>
+  <circle cx="176" cy="120" r="4" fill="#F5A623">
+    <animate attributeName="opacity" values="1;0.35;1" dur="2.4s" repeatCount="indefinite"/>
+  </circle>
+  <text class="t lit" x="188" y="124">cools in 4 min · 180k</text>
+  <line class="rule" x1="20" y1="140" x2="660" y2="140"/>
+
+  <!-- 4: cold -->
+  <text class="cap" x="28" y="166">cold</text>
+  <circle cx="176" cy="162" r="4" fill="#8E8E93"/>
+  <text class="t" x="188" y="166">cold · 180k</text>
+  <line class="rule" x1="20" y1="182" x2="660" y2="182"/>
+
+  <!-- 5: big session: the size turns red -->
+  <text class="cap" x="28" y="208">time to /compact</text>
+  <circle cx="176" cy="204" r="4" fill="#34A853"/>
+  <text class="t" x="188" y="208">12 min · <tspan class="red">450k</tspan></text>
+  <text class="t" x="645" y="208" text-anchor="end">A long session titl… 380k</text>
+  <circle cx="656" cy="204" r="4" fill="#14B8A6"/>
+</svg>

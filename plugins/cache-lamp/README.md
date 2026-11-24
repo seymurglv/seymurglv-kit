@@ -6,9 +6,7 @@ Every message re-reads the whole session. From a warm cache that is cheap. Once 
 
 This session on the left, the neighbours that need a look on the right:
 
-```
-● 42 min · 51k                      sglv 357k ●   unbluffed 226k ●
-```
+<img src="assets/lamp.svg" alt="The lamp line in each state: warm, kept warm, about to cool, cold, and a 450k session whose size is red" width="680">
 
 The dot takes the state's colour: green while the cache is warm, teal while the plugin keeps it warm, amber and breathing when a big cache is about to cool, grey once it is cold. The neighbours' dots use the same colours.
 
@@ -22,13 +20,15 @@ The dot takes the state's colour: green while the cache is warm, teal while the 
 | cold | grey | `cold · 180k` |
 | no request yet | nothing is drawn | |
 
+From `compactHint` tokens (400k by default) the size is drawn red, whatever the state: time to `/compact`, by hand, when it suits you. The plugin never compacts on its own.
+
 Numbers are tokens, not dollars: on a subscription tokens are what the limit counts. A session under `bigTokens` shows only the line: never the amber lamp, never a warning, never a ping. Its rebuild is cheap.
 
 ## Other sessions
 
 Each session writes a heartbeat to the plugin's shared store, and every session reads the others.
 
-- On the right of this session's line come the other sessions that need a look, cooling or kept warm: the session's title (or its project folder when it has none), the context size and a lamp in the same colours (amber when cooling, teal when kept warm). Sessions that share a folder are numbered (`sglv`, `sglv 2`). Only sessions seen in the last minute count, so a closed one leaves within a minute.
+- On the right of this session's line come the other sessions that need a look, cooling or kept warm: the session's title (or its project folder when it has none), the context size and a lamp in the same colours (amber when cooling, teal when kept warm). A name longer than 20 characters is cut with `…`. Sessions that share a name are numbered (`api`, `api 2`). Only sessions seen in the last minute count, so a closed one leaves within a minute.
 - A cold session leaves the line. Its own lamp still says so.
 - `/cache-lamp` prints every open session, this one first, cold ones included.
 
