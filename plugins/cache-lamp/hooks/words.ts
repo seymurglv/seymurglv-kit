@@ -141,6 +141,20 @@ const WORDS: Record<Language, Words> = {
   en: build(COPY.en),
 }
 
-export function wordsFor(language: unknown): Words {
-  return language === 'ru' ? WORDS.ru : WORDS.en
+/** An explicit `ru` or `en` wins; `auto`, missing or unknown follow the locale (ru for ru*, else en). */
+export function pickLanguage(option: unknown, locale: string | undefined): Language {
+  if (option === 'ru' || option === 'en') return option
+  return /^ru([-_]|$)/i.test(locale ?? '') ? 'ru' : 'en'
+}
+
+export function systemLocale(): string | undefined {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().locale
+  } catch {
+    return undefined
+  }
+}
+
+export function wordsFor(option: unknown, locale?: string): Words {
+  return WORDS[pickLanguage(option, locale)]
 }

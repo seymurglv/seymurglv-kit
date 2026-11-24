@@ -7,7 +7,7 @@ import type { EngineInterface, Register, RenderElement } from 'claude-code'
 
 import type { Heartbeat, LampState, Options } from '../types'
 import { DROP_MS, boardOthers, labels, lampState, onShow, nextTtl, pingVerdict, shouldPing, toWarn, warnTargetId } from './state'
-import { tokens, wordsFor } from './words'
+import { systemLocale, tokens, wordsFor } from './words'
 import type { Words } from './words'
 
 export const TICK_MS = 30_000
@@ -174,7 +174,7 @@ const dot = (fill: string, breath: boolean): string =>
 const fromPerson = (origin: { kind: string } | undefined): boolean => origin?.kind === 'composer' || origin?.kind === 'bridge'
 
 export const register: Register = (on, options) => {
-  const words = wordsFor(options?.language)
+  const words = wordsFor(options?.language, systemLocale())
   const opts: Options = {
     bigTokens: typeof options?.bigTokens === 'number' ? options.bigTokens : 100_000,
     keepWarmHours: typeof options?.keepWarmHours === 'number' ? options.keepWarmHours : 3,

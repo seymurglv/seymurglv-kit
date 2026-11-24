@@ -32,10 +32,10 @@
     "language": {
       "type": "string",
       "title": "Interface language",
-      "description": "Language of the lamp's own words.",
+      "description": "Language of the lamp's own words: auto follows the system language, or pick en or ru.",
       "required": false,
-      "options": ["en", "ru"],
-      "default": "en"
+      "options": ["auto", "en", "ru"],
+      "default": "auto"
     }
   }
 }

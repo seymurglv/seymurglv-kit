@@ -81,7 +81,7 @@ It is a function-hooks plugin (`hooks/register.tsx`):
 | `bigTokens` | `100000` | A session with at least this much context counts as big: it can be warned about and kept warm |
 | `keepWarmHours` | `3` | Hours after your last own prompt that a big session is kept warm |
 | `compactHint` | `400000` | From this much context the session's size on the lamp line turns red: time to `/compact` by hand; `0` turns it off |
-| `language` | `en` | Language of the lamp's own words: `en` or `ru` |
+| `language` | `auto` | Language of the lamp's own words: `auto` (the system's), `en` or `ru` |
 
 ## Checks
 
