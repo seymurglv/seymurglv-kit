@@ -30,6 +30,8 @@ const seen = {
   storeBroken: false,
   submitted: [] as string[],
   nextStep: 'read' as 'read' | 'written',
+  cwd: CWD,
+  compact: 'keep' as 'keep' | 'skip',
 }
 
 // Stands for the engine beneath the plugin: a session in a folder, one
@@ -42,6 +44,8 @@ function engine(on: On) {
   seen.storeBroken = false
   seen.submitted = []
   seen.nextStep = 'read'
+  seen.cwd = CWD
+  seen.compact = 'keep'
   const clock = mock.clock(on, { now: T0 })
   on('store.get', (_, e) => ({ value: shelf.get(e.key) }))
   on('store.set', (_, e) => {
@@ -57,7 +61,7 @@ function engine(on: On) {
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('command.register', (_, e) => ({ value: { command: e.name } }))
   on('session.id', () => ({ value: 'sess-1' }))
-  on('session.cwd', () => ({ value: CWD }))
+  on('session.cwd', () => ({ value: seen.cwd }))
   on('session.usage', () => ({
     value: { startedAt: T0, context: { tokens: CTX + 500, window: 1_000_000, percent: 18 }, rateLimits: [], cost: { usd: 1 } },
   }))
@@ -87,7 +91,7 @@ function engine(on: On) {
     seen.submitted.push(e.text)
     return { text: e.text }
   })
-  on('session.compact', (_, e) => ({ messages: e.messages }))
+  on('session.compact', (_, e) => (seen.compact === 'skip' ? { skip: 'nothing to compact' } : { messages: e.messages, tokensBefore: 400_000, tokensAfter: 40_000 }))
   on('session.end', (_, e) => ({ sessionId: e.sessionId }))
   on('classic.SessionStart', () => ({}))
   on('turn.start', (_, e) => ({ turnId: e.turnId }))
@@ -207,6 +211,44 @@ test('clear resets the cache to unknown', async ($, on) => {
   await $.prompt.submit(typed('again'))
   await $.session.compact({ trigger: 'manual', messages: [{ role: 'user', text: 'summary', toolUses: [] }] })
   expect(await beat($)).toMatchObject({ lastActivity: 0, lastOwnPrompt: 0 })
+})
+
+test('a desktop spare folder gives way to the project folder on the next beat', async ($, on) => {
+  const clock = engine(on)
+  seen.cwd = String.raw`C:\Users\me\AppData\Local\Temp\spare-JyJaeV`
+  await start($)
+  expect((await beat($))?.label).toBe('spare-JyJaeV')
+  seen.cwd = String.raw`C:\Users\me\Desktop\my-project`
+  await clock.advance(TICK_MS)
+  expect((await beat($))?.label).toBe('my-project')
+})
+
+test('a precomputed or skipped compaction leaves the cache state alone', async ($, on) => {
+  engine(on)
+  await start($)
+  await $.prompt.submit(typed('hello'))
+  await request($)
+  const before = await beat($)
+  await $.session.compact({ trigger: 'precompute', messages: [{ role: 'user', text: 'summary', toolUses: [] }] })
+  expect(await beat($)).toMatchObject({ lastActivity: before!.lastActivity, lastOwnPrompt: before!.lastOwnPrompt })
+  seen.compact = 'skip'
+  await $.session.compact({ trigger: 'auto', messages: [{ role: 'user', text: 'summary', toolUses: [] }] })
+  expect(await beat($)).toMatchObject({ lastActivity: before!.lastActivity, lastOwnPrompt: before!.lastOwnPrompt })
+})
+
+test('compactions and pings are logged per session', async ($, on) => {
+  const clock = engine(on)
+  await idleBig($)
+  await clock.advance(55 * MIN)
+  await $.session.compact({ trigger: 'precompute', messages: [{ role: 'user', text: 'summary', toolUses: [] }] })
+  await $.session.compact({ trigger: 'auto', messages: [{ role: 'user', text: 'summary', toolUses: [] }] })
+  const log = shelf.get('log:sess-1') as Record<string, unknown>[]
+  expect(log.map(r => r.kind)).toEqual(['ping', 'compact', 'compact'])
+  expect(log[0]).toMatchObject({ verdict: 'read', ctx: CTX })
+  expect(log[1]).toMatchObject({ trigger: 'precompute', keepWarm: 'on', lastOwnPrompt: T0 })
+  expect(log[2]).toMatchObject({ trigger: 'auto', tokensBefore: 400_000, tokensAfter: 40_000 })
+  // the fleet ignores the log
+  expect((await readFleet(fakeStore, T0)).map(h => h.id)).toEqual(['sess-1'])
 })
 
 test('clear under a new session id moves the heartbeat to the new key', async ($, on) => {

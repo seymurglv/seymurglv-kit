@@ -62,6 +62,20 @@ async function change($: EngineInterface, fn: (hb: Heartbeat, now: number) => He
   $.ui.invalidate('ui.render')
 }
 
+// A diagnostic trail per session (`log:<id>`): each compaction and each
+// keep-warm ping, to see how keep-warm and the engine's idle compaction meet.
+const KEEP_LOG = 50
+async function log($: EngineInterface, entry: Record<string, unknown>): Promise<void> {
+  await quietly(async () => {
+    const hb = await read($, self)
+    if (hb.id === '') return
+    const k = `log:${hb.id}`
+    const prev = await $.store.get(k)
+    const list = Array.isArray(prev) ? prev : []
+    await $.store.set(k, [...list, { at: await $.clock.now(), ...entry }].slice(-KEEP_LOG))
+  })
+}
+
 const isHeartbeat = (v: unknown): v is Heartbeat =>
   typeof v === 'object' && v !== null && typeof (v as Heartbeat).id === 'string' && typeof (v as Heartbeat).updatedAt === 'number'
 
@@ -94,6 +108,7 @@ async function ping($: EngineInterface, o: Options): Promise<void> {
   } catch {
     stop = 'noAnswer'
   }
+  await log($, { kind: 'ping', verdict: stop ?? 'read', ctx: hb.ctx })
   if (stop === undefined) await change($, (h, now) => ({ ...h, lastActivity: now }))
   else {
     const reason = stop
@@ -175,7 +190,10 @@ export const register: Register = (on, options) => {
     // The heartbeat beats on its own, so a ping waiting on its fork never drops this session from the boards.
     $.clock.every(TICK_MS, () => {
       void quietly(async () => {
-        if ((await read($, self)).id !== '') await change($, h => h)
+        if ((await read($, self)).id === '') return
+        // The desktop app starts a session in a spare folder and moves it into the project after.
+        const label = basename(await $.session.cwd())
+        await change($, h => ({ ...h, label }))
       })
     })
     return next(e)
@@ -288,7 +306,22 @@ export const register: Register = (on, options) => {
 
   on('session.compact', async ($, e, next) => {
     const result = await next(e)
-    await quietly(() => change($, hb => ({ ...hb, lastActivity: 0, lastOwnPrompt: 0 })))
+    // Bookkeeping must not reject a compaction that already stands.
+    const hb = await read($, self).catch(() => NEW)
+    await log($, {
+      kind: 'compact',
+      trigger: e.trigger,
+      skipped: result.skip !== undefined,
+      tokensBefore: 'tokensBefore' in result ? result.tokensBefore : undefined,
+      tokensAfter: 'tokensAfter' in result ? result.tokensAfter : undefined,
+      ctx: hb.ctx,
+      keepWarm: hb.keepWarm,
+      lastActivity: hb.lastActivity,
+      lastOwnPrompt: hb.lastOwnPrompt,
+    })
+    // A precompute only prepares the summary, and a skip changes nothing: the cache stands.
+    if (e.trigger === 'precompute' || result.skip !== undefined) return result
+    await quietly(() => change($, h => ({ ...h, lastActivity: 0, lastOwnPrompt: 0 })))
     return result
   })
 
