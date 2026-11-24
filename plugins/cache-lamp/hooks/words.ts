@@ -21,8 +21,6 @@ export type Words = {
   list: (rows: { label: string; s: LampState; ctx: number; isSelf: boolean }[]) => string
   /** /cache-lamp with no live session. */
   none: string
-  /** Appended to this session's line once its context reaches compactHint. */
-  hint: string
 }
 
 export function tokens(n: number): string {
@@ -56,7 +54,6 @@ type Copy = {
   toastSelf: (tok: string, m: number) => string
   command: string
   none: string
-  hint: string
 }
 
 const COPY: Record<Language, Copy> = {
@@ -80,7 +77,6 @@ const COPY: Record<Language, Copy> = {
     toastSelf: (tok, m) => `этот чат: кэш ${tok} остынет через ${m} мин`,
     command: 'Кэш всех открытых сессий',
     none: 'cache-lamp: открытых сессий нет',
-    hint: 'пора /compact',
   },
   en: {
     warm: (m, tok) => `cache warm · ${m} min · ${tok}`,
@@ -102,7 +98,6 @@ const COPY: Record<Language, Copy> = {
     toastSelf: (tok, m) => `this chat: ${tok} cache cools in ${m} min`,
     command: 'Cache of every open session',
     none: 'cache-lamp: no open sessions',
-    hint: 'time to /compact',
   },
 }
 
@@ -138,7 +133,6 @@ function build(c: Copy): Words {
     command: c.command,
     list: (rows) => rows.map((r) => other(r.isSelf ? c.self : r.label, r.s, r.ctx)).join('\n'),
     none: c.none,
-    hint: c.hint,
   }
 }
 

@@ -24,8 +24,8 @@
     },
     "compactHint": {
       "type": "number",
-      "title": "Compact hint, in tokens",
-      "description": "From this much context the lamp line says it is time to /compact. 0 turns the hint off.",
+      "title": "Red size from, in tokens",
+      "description": "From this much context the lamp line draws the session's size red: time to /compact by hand. 0 turns it off.",
       "required": false,
       "default": 400000
     },

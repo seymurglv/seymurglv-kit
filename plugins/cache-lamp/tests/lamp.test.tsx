@@ -264,21 +264,6 @@ test('a precomputed or skipped compaction leaves the cache state alone', async (
   expect(await beat($)).toMatchObject({ lastActivity: before!.lastActivity, lastOwnPrompt: before!.lastOwnPrompt })
 })
 
-test('compactions and pings are logged per session', async ($, on) => {
-  const clock = engine(on)
-  await idleBig($)
-  await clock.advance(55 * MIN)
-  await $.session.compact({ trigger: 'precompute', messages: [{ role: 'user', text: 'summary', toolUses: [] }] })
-  await $.session.compact({ trigger: 'auto', messages: [{ role: 'user', text: 'summary', toolUses: [] }] })
-  const log = shelf.get('log:sess-1') as Record<string, unknown>[]
-  expect(log.map(r => r.kind)).toEqual(['ping', 'compact', 'compact'])
-  expect(log[0]).toMatchObject({ verdict: 'read', ctx: CTX })
-  expect(log[1]).toMatchObject({ trigger: 'precompute', keepWarm: 'on', lastOwnPrompt: T0 })
-  expect(log[2]).toMatchObject({ trigger: 'auto', tokensBefore: 400_000, tokensAfter: 40_000 })
-  // the fleet ignores the log
-  expect((await readFleet(fakeStore, T0)).map(h => h.id)).toEqual(['sess-1'])
-})
-
 test('clear under a new session id moves the heartbeat to the new key', async ($, on) => {
   engine(on)
   await start($)
@@ -591,89 +576,94 @@ test('stopped keep-warm shows its reason', RU, async ($, on) => {
   }
 })
 
-const HINT = /^ · пора \/compact$/
 const hintAt = (compactHint: number) => ({ options: { language: 'ru', compactHint } })
 
-async function hintShown($: Engine): Promise<boolean[]> {
-  const shown: boolean[] = []
+// Whether this session's size is drawn red, on terminal and desktop.
+async function sizeRed($: Engine, size = /^180k$/): Promise<boolean[]> {
+  const red: boolean[] = []
   for (const surface of SURFACES) {
     const ui = await $.ui.mount({ ...BAND, surface })
-    shown.push((await ui.find({ type: 'Text', text: HINT })) !== undefined)
+    const found = await ui.find({ type: 'Text', text: size })
+    red.push(found?.props.color === 'error')
+    expect(await ui.find({ type: 'Text', text: /compact/ })).toBeUndefined()
     await ui.unmount()
   }
-  return shown
+  return red
 }
 
-test('over compactHint the line says "пора /compact"', hintAt(150_000), async ($, on) => {
+test('over compactHint the size turns red', hintAt(150_000), async ($, on) => {
   engine(on)
   await start($)
   await request($)
-  expect(await hintShown($)).toEqual([true, true])
+  expect(await sizeRed($)).toEqual([true, true])
 })
 
-test('at exactly compactHint the hint shows', hintAt(CTX), async ($, on) => {
+test('at exactly compactHint the size is red', hintAt(CTX), async ($, on) => {
   engine(on)
   await start($)
   await request($)
-  expect(await hintShown($)).toEqual([true, true])
+  expect(await sizeRed($)).toEqual([true, true])
 })
 
-test('under the default 400k there is no hint', RU, async ($, on) => {
+test('under the default 400k the line stays as it was', RU, async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  await request($)
+  await clock.advance(18 * MIN)
+  expect(await sizeRed($)).toEqual([false, false])
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    expect(await ui.find({ type: 'Text', text: /^42 мин · 180k$/ })).toBeDefined()
+    await ui.unmount()
+  }
+})
+
+test('compactHint 0 never reddens the size', hintAt(0), async ($, on) => {
   engine(on)
   await start($)
   await request($)
-  expect(await hintShown($)).toEqual([false, false])
+  expect(await sizeRed($)).toEqual([false, false])
 })
 
-test('compactHint 0 turns the hint off', hintAt(0), async ($, on) => {
-  engine(on)
-  await start($)
-  await request($)
-  expect(await hintShown($)).toEqual([false, false])
-})
-
-test('a stopped reason comes before the hint', hintAt(150_000), async ($, on) => {
+test('a stopped reason still shows beside a red size', hintAt(150_000), async ($, on) => {
   const clock = engine(on)
   await idleBig($)
   seen.fork = 'rebuild'
   await clock.advance(56 * MIN)
+  expect(await sizeRed($)).toEqual([true, true])
   for (const surface of SURFACES) {
     const ui = await $.ui.mount({ ...BAND, surface })
-    const text = (await ui.findAll({ type: 'Text' })).map(t => t.text).join('|')
-    const reason = text.indexOf('подогрев выключен')
-    const hint = text.indexOf('пора /compact')
-    expect(reason).toBeGreaterThan(-1)
-    expect(hint).toBeGreaterThan(reason)
+    expect(await ui.find({ type: 'Text', text: /подогрев выключен: пинг пересобрал кэш/ })).toBeDefined()
     await ui.unmount()
   }
 })
 
-test('a cooling line over the threshold keeps the hint', hintAt(150_000), async ($, on) => {
+test('a cooling line over the threshold keeps its words and a red size', hintAt(150_000), async ($, on) => {
   const clock = engine(on)
   await start($)
   await request($)
   await clock.advance(56 * MIN)
   for (const surface of SURFACES) {
     const ui = await $.ui.mount({ ...BAND, surface })
-    expect(await ui.find({ type: 'Text', text: /^остынет через 4 мин · 180k$/ })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: /^остынет через 4 мин · $/ })).toBeDefined()
     await ui.unmount()
   }
-  expect(await hintShown($)).toEqual([true, true])
+  expect(await sizeRed($)).toEqual([true, true])
 })
 
-test('no hint before the first request, however low the threshold', hintAt(1), async ($, on) => {
+test('nothing is red before the first request, however low the threshold', hintAt(1), async ($, on) => {
   engine(on)
   await start($)
-  expect(await hintShown($)).toEqual([false, false])
+  expect(await sizeRed($, /k$/)).toEqual([false, false])
 })
 
-test('the hint goes away after /compact', hintAt(150_000), async ($, on) => {
+test('the red size goes away after /compact', hintAt(150_000), async ($, on) => {
   engine(on)
   await start($)
   await request($)
-  expect(await hintShown($)).toEqual([true, true])
+  expect(await sizeRed($)).toEqual([true, true])
   await $.session.compact({ trigger: 'manual', messages: [{ role: 'user', text: 'summary', toolUses: [] }] })
-  expect(await hintShown($)).toEqual([false, false])
+  expect(await sizeRed($)).toEqual([false, false])
 })
 
 test('the line hides while a turn runs or a survey is open', RU, async ($, on) => {

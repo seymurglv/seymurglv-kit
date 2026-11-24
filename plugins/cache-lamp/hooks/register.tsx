@@ -78,20 +78,6 @@ async function change($: EngineInterface, fn: (hb: Heartbeat, now: number) => He
   $.ui.invalidate('ui.render')
 }
 
-// A diagnostic trail per session (`log:<id>`): each compaction and each
-// keep-warm ping, to see how keep-warm and the engine's idle compaction meet.
-const KEEP_LOG = 50
-async function log($: EngineInterface, entry: Record<string, unknown>): Promise<void> {
-  await quietly(async () => {
-    const hb = await read($, self)
-    if (hb.id === '') return
-    const k = `log:${hb.id}`
-    const prev = await $.store.get(k)
-    const list = Array.isArray(prev) ? prev : []
-    await $.store.set(k, [...list, { at: await $.clock.now(), ...entry }].slice(-KEEP_LOG))
-  })
-}
-
 const isHeartbeat = (v: unknown): v is Heartbeat =>
   typeof v === 'object' && v !== null && typeof (v as Heartbeat).id === 'string' && typeof (v as Heartbeat).updatedAt === 'number'
 
@@ -124,7 +110,6 @@ async function ping($: EngineInterface, o: Options): Promise<void> {
   } catch {
     stop = 'noAnswer'
   }
-  await log($, { kind: 'ping', verdict: stop ?? 'read', ctx: hb.ctx })
   if (stop === undefined) await change($, (h, now) => ({ ...h, lastActivity: now }))
   else {
     const reason = stop
@@ -243,7 +228,10 @@ export const register: Register = (on, options) => {
       const size = terminal ? undefined : ('caption' as const)
       const lit = mine.kind === 'cooling' && me.ctx >= opts.bigTokens
       const stopped = me.keepWarm === 'stopped' && me.stopReason !== undefined ? ` · ${words.stopped(me.stopReason)}` : ''
-      const hint = opts.compactHint > 0 && me.ctx >= opts.compactHint
+      // From compactHint tokens the size is drawn red: time to /compact, by hand.
+      const own = words.short(mine, me.ctx)
+      const size$ = tokens(me.ctx)
+      const red = opts.compactHint > 0 && me.ctx >= opts.compactHint && own.endsWith(size$)
 
       // A lamp in its state's colour: on desktop a 3 px dot, in the terminal a glyph. Only a cooling one breathes.
       const lamp = (k: string, kind: Kind): RenderElement => {
@@ -262,10 +250,23 @@ export const register: Register = (on, options) => {
             {' '}
           </Text>
           <Box flexShrink={0}>
-            <Text size={size} dimColor={!lit}>
-              {words.short(mine, me.ctx) + stopped}
-            </Text>
-            {hint && <Text size={size}>{` · ${words.hint}`}</Text>}
+            {red ? (
+              <>
+                <Text size={size} dimColor={!lit}>
+                  {own.slice(0, -size$.length)}
+                </Text>
+                <Text size={size} color="error">
+                  {size$}
+                </Text>
+                <Text size={size} dimColor={!lit}>
+                  {stopped}
+                </Text>
+              </>
+            ) : (
+              <Text size={size} dimColor={!lit}>
+                {own + stopped}
+              </Text>
+            )}
           </Box>
           <Box flexGrow={1} minWidth={1} />
           {others.map(hb => {
@@ -334,19 +335,6 @@ export const register: Register = (on, options) => {
 
   on('session.compact', async ($, e, next) => {
     const result = await next(e)
-    // Bookkeeping must not reject a compaction that already stands.
-    const hb = await read($, self).catch(() => NEW)
-    await log($, {
-      kind: 'compact',
-      trigger: e.trigger,
-      skipped: result.skip !== undefined,
-      tokensBefore: 'tokensBefore' in result ? result.tokensBefore : undefined,
-      tokensAfter: 'tokensAfter' in result ? result.tokensAfter : undefined,
-      ctx: hb.ctx,
-      keepWarm: hb.keepWarm,
-      lastActivity: hb.lastActivity,
-      lastOwnPrompt: hb.lastOwnPrompt,
-    })
     // A precompute only prepares the summary, and a skip changes nothing: the cache stands.
     if (e.trigger === 'precompute' || result.skip !== undefined) return result
     await quietly(() => change($, h => ({ ...h, lastActivity: 0, lastOwnPrompt: 0 })))
