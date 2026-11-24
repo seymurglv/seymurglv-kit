@@ -31,6 +31,7 @@ const seen = {
   submitted: [] as string[],
   nextStep: 'read' as 'read' | 'written',
   cwd: CWD,
+  root: CWD,
   compact: 'keep' as 'keep' | 'skip',
 }
 
@@ -45,6 +46,7 @@ function engine(on: On) {
   seen.submitted = []
   seen.nextStep = 'read'
   seen.cwd = CWD
+  seen.root = CWD
   seen.compact = 'keep'
   const clock = mock.clock(on, { now: T0 })
   on('store.get', (_, e) => ({ value: shelf.get(e.key) }))
@@ -62,6 +64,8 @@ function engine(on: On) {
   on('command.register', (_, e) => ({ value: { command: e.name } }))
   on('session.id', () => ({ value: 'sess-1' }))
   on('session.cwd', () => ({ value: seen.cwd }))
+  on('session.root', () => ({ value: seen.root }))
+  on('classic.UserPromptSubmit', () => ({}))
   on('session.usage', () => ({
     value: { startedAt: T0, context: { tokens: CTX + 500, window: 1_000_000, percent: 18 }, rateLimits: [], cost: { usd: 1 } },
   }))
@@ -215,12 +219,36 @@ test('clear resets the cache to unknown', async ($, on) => {
 
 test('a desktop spare folder gives way to the project folder on the next beat', async ($, on) => {
   const clock = engine(on)
-  seen.cwd = String.raw`C:\Users\me\AppData\Local\Temp\spare-JyJaeV`
+  seen.root = String.raw`C:\Users\me\AppData\Local\Temp\spare-JyJaeV`
   await start($)
   expect((await beat($))?.label).toBe('spare-JyJaeV')
-  seen.cwd = String.raw`C:\Users\me\Desktop\my-project`
+  seen.root = String.raw`C:\Users\me\Desktop\my-project`
   await clock.advance(TICK_MS)
   expect((await beat($))?.label).toBe('my-project')
+})
+
+test('a shell cd into a subfolder does not rename the session', async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  seen.cwd = `${CWD}/scripts`
+  await clock.advance(TICK_MS)
+  expect((await beat($))?.label).toBe('demo-project')
+})
+
+test('the session title the owner set wins over the folder, and holds', async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  await $.classic.UserPromptSubmit({ prompt: 'go', session_title: 'video edit' })
+  expect((await beat($))?.label).toBe('video edit')
+  await clock.advance(TICK_MS * 2)
+  expect((await beat($))?.label).toBe('video edit')
+})
+
+test('a resumed session takes its title from SessionStart', async ($, on) => {
+  engine(on)
+  await start($)
+  await $.classic.SessionStart({ source: 'resume', session_id: 'sess-1', session_title: 'video edit' })
+  expect((await beat($))?.label).toBe('video edit')
 })
 
 test('a precomputed or skipped compaction leaves the cache state alone', async ($, on) => {
@@ -625,7 +653,27 @@ test('a cooling line over the threshold keeps the hint', hintAt(150_000), async 
   await start($)
   await request($)
   await clock.advance(56 * MIN)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    expect(await ui.find({ type: 'Text', text: /^остынет через 4 мин · 180k$/ })).toBeDefined()
+    await ui.unmount()
+  }
   expect(await hintShown($)).toEqual([true, true])
+})
+
+test('no hint before the first request, however low the threshold', hintAt(1), async ($, on) => {
+  engine(on)
+  await start($)
+  expect(await hintShown($)).toEqual([false, false])
+})
+
+test('the hint goes away after /compact', hintAt(150_000), async ($, on) => {
+  engine(on)
+  await start($)
+  await request($)
+  expect(await hintShown($)).toEqual([true, true])
+  await $.session.compact({ trigger: 'manual', messages: [{ role: 'user', text: 'summary', toolUses: [] }] })
+  expect(await hintShown($)).toEqual([false, false])
 })
 
 test('the line hides while a turn runs or a survey is open', RU, async ($, on) => {

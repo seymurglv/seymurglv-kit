@@ -28,7 +28,7 @@ Numbers are tokens, not dollars: on a subscription tokens are what the limit cou
 
 Each session writes a heartbeat to the plugin's shared store, and every session reads the others.
 
-- On the right of this session's line come the other sessions that need a look, cooling or kept warm: the folder, the context size and a lamp in the same colours (amber when cooling, teal when kept warm). Sessions that share a folder are numbered (`sglv`, `sglv 2`). Only sessions seen in the last minute count, so a closed one leaves within a minute.
+- On the right of this session's line come the other sessions that need a look, cooling or kept warm: the session's title (or its project folder when it has none), the context size and a lamp in the same colours (amber when cooling, teal when kept warm). Sessions that share a folder are numbered (`sglv`, `sglv 2`). Only sessions seen in the last minute count, so a closed one leaves within a minute.
 - A cold session leaves the line. Its own lamp still says so.
 - `/cache-lamp` prints every open session, this one first, cold ones included.
 

@@ -50,6 +50,22 @@ const key = (id: string): string => `hb:${id}`
 
 const basename = (path: string): string => path.split(/[\\/]/).filter(part => part !== '').pop() ?? path
 
+// The session's name: the title its owner set, else its project folder. The
+// root, not the cwd: a shell `cd` into a subfolder must not rename it.
+let title: string | undefined
+
+async function nameOf($: EngineInterface): Promise<string> {
+  return title ?? basename(await $.session.root())
+}
+
+/** Keeps a new, non-blank title; true when it changed. */
+function takeTitle(t: string | undefined): boolean {
+  const next = t?.trim()
+  if (!next || next === title) return false
+  title = next
+  return true
+}
+
 // Applies `change` to this session's heartbeat, shares it, redraws.
 async function change($: EngineInterface, fn: (hb: Heartbeat, now: number) => Heartbeat): Promise<void> {
   const now = await $.clock.now()
@@ -182,7 +198,7 @@ export const register: Register = (on, options) => {
 
   on('session.start', async ($, e, next) => {
     const id = await $.session.id()
-    const label = basename(await $.session.cwd())
+    const label = await nameOf($)
     await $.command.register({ name: 'cache-lamp', description: words.command })
     await change($, (_, now) => ({ ...NEW, id, label, updatedAt: now }))
     $.clock.every(TICK_MS, () => {
@@ -193,7 +209,7 @@ export const register: Register = (on, options) => {
       void quietly(async () => {
         if ((await read($, self)).id === '') return
         // The desktop app starts a session in a spare folder and moves it into the project after.
-        const label = basename(await $.session.cwd())
+        const label = await nameOf($)
         await change($, h => ({ ...h, label }))
       })
     })
@@ -294,16 +310,25 @@ export const register: Register = (on, options) => {
   })
 
   on('classic.SessionStart', async ($, e, next) => {
+    takeTitle(e.session_title)
     // /clear, /resume and /branch go on under a new session id with an
     // unknown cache, and raise no session.start.
     if (e.source === 'clear' || e.source === 'resume' || e.source === 'fork') {
       await quietly(async () => {
         const before = await read($, self)
         if (before.id !== '' && before.id !== e.session_id) await $.store.delete(key(before.id))
-        const label = basename(await $.session.cwd())
+        const label = await nameOf($)
         await change($, hb => ({ ...hb, id: e.session_id, label, lastActivity: 0, lastOwnPrompt: 0, working: false }))
       })
     }
+    return next(e)
+  })
+
+  on('classic.UserPromptSubmit', async ($, e, next) => {
+    if (takeTitle(e.session_title)) await quietly(async () => {
+      const label = await nameOf($)
+      await change($, hb => ({ ...hb, label }))
+    })
     return next(e)
   })
 
