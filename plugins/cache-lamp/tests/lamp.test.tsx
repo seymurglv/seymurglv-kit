@@ -651,6 +651,30 @@ test('a cooling line over the threshold keeps its words and a red size', hintAt(
   expect(await sizeRed($)).toEqual([true, true])
 })
 
+test('a red size stays on one row with the line', hintAt(150_000), async ($, on) => {
+  engine(on)
+  await start($)
+  await request($)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    const own = await ui.find({ type: 'Box', key: 'own-text' })
+    expect(own?.props.flexDirection).toBe('row')
+    await ui.unmount()
+  }
+})
+
+test('a long neighbour name is cut to 20 characters', RU, async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  await request($)
+  shelf.set('hb:sess-2', neighbour(await clock.now(), { label: 'Длинное название сессии тут' }))
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    expect(await ui.find({ type: 'Text', text: /^Длинное название се… 180k$/ })).toBeDefined()
+    await ui.unmount()
+  }
+})
+
 test('nothing is red before the first request, however low the threshold', hintAt(1), async ($, on) => {
   engine(on)
   await start($)

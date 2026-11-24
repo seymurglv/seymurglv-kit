@@ -171,6 +171,10 @@ const dot = (fill: string, breath: boolean): string =>
   (breath ? '<animate attributeName="opacity" values="1;0.35;1" dur="2.4s" repeatCount="indefinite"/>' : '') +
   '</circle></svg>'
 
+// A neighbour's name on the line: a session title can be a whole sentence.
+const NAME_MAX = 20
+const cut = (name: string): string => (name.length > NAME_MAX ? `${name.slice(0, NAME_MAX - 1)}…` : name)
+
 const fromPerson = (origin: { kind: string } | undefined): boolean => origin?.kind === 'composer' || origin?.kind === 'bridge'
 
 export const register: Register = (on, options) => {
@@ -249,7 +253,7 @@ export const register: Register = (on, options) => {
           <Text size={size} dimColor={!lit}>
             {' '}
           </Text>
-          <Box flexShrink={0}>
+          <Box key="own-text" flexDirection="row" flexShrink={0}>
             {red ? (
               <>
                 <Text size={size} dimColor={!lit}>
@@ -274,7 +278,7 @@ export const register: Register = (on, options) => {
             return (
               <Box key={`other-${hb.id}`} flexDirection="row" alignItems="center" flexShrink={1} minWidth={0} marginLeft={terminal ? 2 : 'sm'}>
                 <Text size={size} dimColor wrap="truncate-end">
-                  {`${names.get(hb.id) ?? hb.label} ${tokens(hb.ctx)}`}
+                  {`${cut(names.get(hb.id) ?? hb.label)} ${tokens(hb.ctx)}`}
                 </Text>
                 <Text size={size}> </Text>
                 {s.kind !== 'unknown' && lamp(`other-lamp-${hb.id}`, s.kind)}

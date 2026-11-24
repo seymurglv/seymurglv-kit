@@ -25,7 +25,7 @@
     "language": {
       "type": "string",
       "title": "Interface language",
-      "description": "Language of the band's own words (the hint and the key line). Suggestions follow the conversation's language either way.",
+      "description": "Language of the band's own words (the hint and the key line): auto follows the system language, or pick en or ru. Suggestions follow the conversation's language either way.",
       "required": false,
       "options": ["auto", "en", "ru"],
       "default": "auto"
