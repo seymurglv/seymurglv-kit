@@ -563,6 +563,71 @@ test('stopped keep-warm shows its reason', RU, async ($, on) => {
   }
 })
 
+const HINT = /^ · пора \/compact$/
+const hintAt = (compactHint: number) => ({ options: { language: 'ru', compactHint } })
+
+async function hintShown($: Engine): Promise<boolean[]> {
+  const shown: boolean[] = []
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    shown.push((await ui.find({ type: 'Text', text: HINT })) !== undefined)
+    await ui.unmount()
+  }
+  return shown
+}
+
+test('over compactHint the line says "пора /compact"', hintAt(150_000), async ($, on) => {
+  engine(on)
+  await start($)
+  await request($)
+  expect(await hintShown($)).toEqual([true, true])
+})
+
+test('at exactly compactHint the hint shows', hintAt(CTX), async ($, on) => {
+  engine(on)
+  await start($)
+  await request($)
+  expect(await hintShown($)).toEqual([true, true])
+})
+
+test('under the default 400k there is no hint', RU, async ($, on) => {
+  engine(on)
+  await start($)
+  await request($)
+  expect(await hintShown($)).toEqual([false, false])
+})
+
+test('compactHint 0 turns the hint off', hintAt(0), async ($, on) => {
+  engine(on)
+  await start($)
+  await request($)
+  expect(await hintShown($)).toEqual([false, false])
+})
+
+test('a stopped reason comes before the hint', hintAt(150_000), async ($, on) => {
+  const clock = engine(on)
+  await idleBig($)
+  seen.fork = 'rebuild'
+  await clock.advance(56 * MIN)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...BAND, surface })
+    const text = (await ui.findAll({ type: 'Text' })).map(t => t.text).join('|')
+    const reason = text.indexOf('подогрев выключен')
+    const hint = text.indexOf('пора /compact')
+    expect(reason).toBeGreaterThan(-1)
+    expect(hint).toBeGreaterThan(reason)
+    await ui.unmount()
+  }
+})
+
+test('a cooling line over the threshold keeps the hint', hintAt(150_000), async ($, on) => {
+  const clock = engine(on)
+  await start($)
+  await request($)
+  await clock.advance(56 * MIN)
+  expect(await hintShown($)).toEqual([true, true])
+})
+
 test('the line hides while a turn runs or a survey is open', RU, async ($, on) => {
   engine(on)
   await start($)

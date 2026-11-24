@@ -22,6 +22,13 @@
       "required": false,
       "default": 3
     },
+    "compactHint": {
+      "type": "number",
+      "title": "Compact hint, in tokens",
+      "description": "From this much context the lamp line says it is time to /compact. 0 turns the hint off.",
+      "required": false,
+      "default": 400000
+    },
     "language": {
       "type": "string",
       "title": "Interface language",

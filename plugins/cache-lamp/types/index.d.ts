@@ -23,7 +23,7 @@ export type LampState =
   | { kind: 'cooling'; leftMs: number }
   | { kind: 'cold'; sinceMs: number }
 
-export type Options = { bigTokens: number; keepWarmHours: number }
+export type Options = { bigTokens: number; keepWarmHours: number; compactHint: number }
 
 declare module 'claude-code' {
   interface PluginState {

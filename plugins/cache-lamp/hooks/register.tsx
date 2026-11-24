@@ -177,6 +177,7 @@ export const register: Register = (on, options) => {
   const opts: Options = {
     bigTokens: typeof options?.bigTokens === 'number' ? options.bigTokens : 100_000,
     keepWarmHours: typeof options?.keepWarmHours === 'number' ? options.keepWarmHours : 3,
+    compactHint: typeof options?.compactHint === 'number' ? options.compactHint : 400_000,
   }
 
   on('session.start', async ($, e, next) => {
@@ -226,6 +227,7 @@ export const register: Register = (on, options) => {
       const size = terminal ? undefined : ('caption' as const)
       const lit = mine.kind === 'cooling' && me.ctx >= opts.bigTokens
       const stopped = me.keepWarm === 'stopped' && me.stopReason !== undefined ? ` · ${words.stopped(me.stopReason)}` : ''
+      const hint = opts.compactHint > 0 && me.ctx >= opts.compactHint
 
       // A lamp in its state's colour: on desktop a 3 px dot, in the terminal a glyph. Only a cooling one breathes.
       const lamp = (k: string, kind: Kind): RenderElement => {
@@ -247,6 +249,7 @@ export const register: Register = (on, options) => {
             <Text size={size} dimColor={!lit}>
               {words.short(mine, me.ctx) + stopped}
             </Text>
+            {hint && <Text size={size}>{` · ${words.hint}`}</Text>}
           </Box>
           <Box flexGrow={1} minWidth={1} />
           {others.map(hb => {

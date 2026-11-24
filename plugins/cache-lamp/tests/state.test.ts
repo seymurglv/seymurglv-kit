@@ -3,7 +3,7 @@ import { expect, test } from 'claude-code/testing'
 import type { Heartbeat } from '../types'
 import { MIN, boardOthers, lampState, nextTtl, pingVerdict, shouldPing, toWarn, warnTargetId, labels } from '../hooks/state'
 
-const o = { bigTokens: 100_000, keepWarmHours: 3 }
+const o = { bigTokens: 100_000, keepWarmHours: 3, compactHint: 400_000 }
 const now = 10_000_000_000
 
 const hb = (over: Partial<Heartbeat>): Heartbeat => ({
