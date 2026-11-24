@@ -129,7 +129,7 @@ function answer(turnId: string, text = LONG_ANSWER, agentId?: string) {
   }
 }
 
-test('a turn brings three rows, the first as ghost text, on every surface', async ($, on) => {
+test('a turn brings three rows, the first as ghost text, on every surface', { options: { language: 'en' } }, async ($, on) => {
   const seen = engine(on, REPLY)
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
   await $.turn.complete(answer('t1'))
@@ -180,7 +180,7 @@ test('a pick fills the prompt box and sends nothing, on every surface', async ($
   }
 })
 
-test('desktop: one highlight per row, the hint after the label, nothing overlaps', async ($, on) => {
+test('desktop: one highlight per row, the hint after the label, nothing overlaps', { options: { language: 'en' } }, async ($, on) => {
   const seen = engine(on, REPLY)
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
   await $.turn.complete(answer('t1'))
@@ -432,7 +432,7 @@ test('Russian words follow the language option', { options: { language: 'ru' } }
   }
 })
 
-test('/waypoints reports what the forks took', async ($, on) => {
+test('/waypoints reports what the forks took', { options: { language: 'en' } }, async ($, on) => {
   const seen = engine(on, REPLY)
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
   await $.turn.complete(answer('t1'))
@@ -449,7 +449,7 @@ test('/waypoints reports what the forks took', async ($, on) => {
   expect(JSON.stringify(result)).toContain('This session: 2 requests · 240k from cache')
 })
 
-test('while the fork is out the band holds one quiet line, on every surface', async ($, on) => {
+test('while the fork is out the band holds one quiet line, on every surface', { options: { language: 'en' } }, async ($, on) => {
   const seen = engine(on, REPLY)
   seen.forkMs = 3000
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
@@ -469,7 +469,7 @@ test('while the fork is out the band holds one quiet line, on every surface', as
   await ui.unmount()
 })
 
-test('9 asks for other prompts and keeps the offer until they come, on every surface', async ($, on) => {
+test('9 asks for other prompts and keeps the offer until they come, on every surface', { options: { language: 'en' } }, async ($, on) => {
   const seen = engine(on, REPLY)
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
   for (const surface of SURFACES) {
@@ -512,7 +512,7 @@ test('9 asks for other prompts and keeps the offer until they come, on every sur
   }
 })
 
-test('/waypoints show brings the last offer back', async ($, on) => {
+test('/waypoints show brings the last offer back', { options: { language: 'en' } }, async ($, on) => {
   const seen = engine(on, REPLY)
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
   const show = () =>

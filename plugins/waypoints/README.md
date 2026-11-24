@@ -30,7 +30,7 @@ Terminal:
 - `0` hides the rows. A new turn hides them too. `/waypoints show` brings the last offer back.
 - The plugin never sends a prompt on its own.
 
-Suggestions come in the language of the conversation. The band's own words (the hover hint and the key line) are English by default; set `language` to `ru` for Russian.
+Suggestions come in the language of the conversation. The band's own words (the hover hint and the key line) follow the system's language by default (`auto`), or `en`/`ru` when set; suggestions still follow the conversation.
 
 The look is quiet: no bordered or accent buttons, the label, and under the pointer a muted note of what a pick does. In the terminal the rows read as a survey's do, `1: label`.
 
@@ -64,7 +64,7 @@ It is a function-hooks plugin (`hooks/register.tsx`):
 | --- | --- | --- |
 | `minAnswerChars` | `80` | No suggestions after an answer shorter than this |
 | `suggestSkills` | `true` | Give the suggester the session's skills and slash commands |
-| `language` | `en` | Language of the band's own words: `en` or `ru` |
+| `language` | `auto` | Language of the band's own words: `auto` (the system's), `en` or `ru` |
 
 ## Checks
 

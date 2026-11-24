@@ -12,7 +12,7 @@ import type { EngineInterface, ModelUsage, Register, RenderElement } from 'claud
 
 import type { WaypointsSuggestion, WaypointsTally, WaypointsView } from '../types'
 import { commandList, forkPrompt, parseReply, skillTag } from './suggest'
-import { wordsFor } from './words'
+import { systemLocale, wordsFor } from './words'
 
 const PLUGIN = 'waypoints'
 const TALLY_KEY = 'tally-1'
@@ -120,7 +120,7 @@ async function ask(
 export const register: Register = (on, options) => {
   const minAnswerChars = typeof options?.minAnswerChars === 'number' ? options.minAnswerChars : 80
   const suggestSkills = options?.suggestSkills !== false
-  const words = wordsFor(options?.language)
+  const words = wordsFor(options?.language, systemLocale())
 
   on('session.start', async ($, e, next) => {
     await $.command.register({ name: 'waypoints', description: words.command })

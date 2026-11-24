@@ -27,8 +27,8 @@
       "title": "Interface language",
       "description": "Language of the band's own words (the hint and the key line). Suggestions follow the conversation's language either way.",
       "required": false,
-      "options": ["en", "ru"],
-      "default": "en"
+      "options": ["auto", "en", "ru"],
+      "default": "auto"
     }
   }
 }
